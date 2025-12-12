@@ -56,7 +56,7 @@ class Order(models.Model):
     discount_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     discount_code = models.CharField(max_length=50, blank=True)
     total = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(0)])
-    currency = models.CharField(max_length=3, default='USD')
+    currency = models.CharField(max_length=3, default='KSH')
     
     # Shipping
     shipping_method = models.CharField(max_length=100, blank=True)
@@ -191,8 +191,13 @@ class OrderItem(models.Model):
         self.total = (self.price * self.quantity) - self.discount
         
         # Generate download key for digital products
-        if self.product.is_digital and not self.download_key:
-            self.download_key = uuid.uuid4()
+        try:
+            is_digital = getattr(self.product, 'is_digital', False)
+            if is_digital and not self.download_key:
+                self.download_key = self._generate_download_key()
+        except AttributeError:
+            # Product doesn't have is_digital attribute
+            pass
         
         super().save(*args, **kwargs)
         

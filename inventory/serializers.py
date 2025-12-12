@@ -5,6 +5,7 @@ from .models import (
 )
 from products.models import Product
 from products.serializers import ProductListSerializer
+from customers.models import Customer
 
 
 class WarehouseSerializer(serializers.ModelSerializer):
@@ -310,7 +311,7 @@ class StockCountCreateSerializer(serializers.Serializer):
     warehouse = serializers.PrimaryKeyRelatedField(queryset=Warehouse.objects.all())
     count_type = serializers.ChoiceField(choices=StockCount.COUNT_TYPES)
     scheduled_date = serializers.DateField()
-    assigned_to = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
+    assigned_to = serializers.PrimaryKeyRelatedField(queryset=Customer.objects.all())
     notes = serializers.CharField(required=False, allow_blank=True)
     products = serializers.ListField(
         child=serializers.IntegerField(),

@@ -7,7 +7,7 @@ from .models import (
 )
 from customers.serializers import AddressSerializer, CustomerSerializer
 from products.serializers import ProductListSerializer
-from products.models import Product  # ← ADD THIS IMPORT
+from products.models import Product
 from customers.models import Address
 import uuid
 
@@ -40,7 +40,6 @@ class OrderItemSerializer(serializers.ModelSerializer):
     def get_variant_details(self, obj):
         """Get human-readable variant details"""
         if obj.variant:
-            # Convert JSON variant to readable string
             details = []
             for key, value in obj.variant.items():
                 details.append(f"{key.title()}: {value}")
@@ -121,10 +120,14 @@ class OrderListSerializer(serializers.ModelSerializer):
         read_only_fields = fields
     
     def get_customer_name(self, obj):
-        return f"{obj.customer.user.first_name} {obj.customer.user.last_name}"
+        if obj.customer:
+            return f"{obj.customer.user.first_name} {obj.customer.user.last_name}"
+        return "Guest"
     
     def get_customer_email(self, obj):
-        return obj.customer.user.email
+        if obj.customer:
+            return obj.customer.user.email
+        return obj.guest_email or ""
     
     def get_items_count(self, obj):
         return obj.items.count()
@@ -198,18 +201,20 @@ class OrderDetailSerializer(serializers.ModelSerializer):
                 'phone': obj.guest_phone,
                 'is_guest': True
             }
-        return {
-            'id': obj.customer.id,
-            'email': obj.customer.user.email,
-            'first_name': obj.customer.user.first_name,
-            'last_name': obj.customer.user.last_name,
-            'phone': obj.customer.phone,
-            'is_guest': False
-        }
+        if obj.customer:
+            return {
+                'id': obj.customer.id,
+                'email': obj.customer.user.email,
+                'first_name': obj.customer.user.first_name,
+                'last_name': obj.customer.user.last_name,
+                'phone': obj.customer.phone,
+                'is_guest': False
+            }
+        return None
 
 
 class OrderCreateSerializer(serializers.ModelSerializer):
-    items = serializers.JSONField(write_only=True)  # [{"product_id": 1, "quantity": 2, "variant": {...}}]
+    items = serializers.JSONField(write_only=True)
     shipping_method_id = serializers.PrimaryKeyRelatedField(
         queryset=ShippingMethod.objects.filter(is_active=True),
         write_only=True,
@@ -219,12 +224,14 @@ class OrderCreateSerializer(serializers.ModelSerializer):
     billing_address_id = serializers.PrimaryKeyRelatedField(
         queryset=Address.objects.all(),
         write_only=True,
-        required=False
+        required=False,
+        allow_null=True
     )
     shipping_address_id = serializers.PrimaryKeyRelatedField(
         queryset=Address.objects.all(),
         write_only=True,
-        required=False
+        required=False,
+        allow_null=True
     )
     
     class Meta:
@@ -252,7 +259,9 @@ class OrderCreateSerializer(serializers.ModelSerializer):
             try:
                 product = Product.objects.get(id=item['product_id'], is_active=True)
             except Product.DoesNotExist:
-                raise serializers.ValidationError(f"Product with id {item['product_id']} does not exist or is not active")
+                raise serializers.ValidationError(
+                    f"Product with id {item['product_id']} does not exist or is not active"
+                )
             
             # Check stock
             if product.stock_quantity < item['quantity']:
@@ -267,27 +276,66 @@ class OrderCreateSerializer(serializers.ModelSerializer):
             })
         
         return validated_items
-        
     
     def create(self, validated_data):
         request = self.context['request']
-        items_data = validated_data.pop('items')  # Now contains actual Product objects
+        items_data = validated_data.pop('items')
         shipping_method = validated_data.pop('shipping_method_id', None)
         use_default_address = validated_data.pop('use_default_address', True)
         
-        # Get or create addresses
-        customer = request.user.customer if request.user.is_authenticated else None
+        # Get customer
+        customer = None
+        if request.user.is_authenticated:
+            try:
+                customer = request.user.customer
+            except:
+                raise serializers.ValidationError("User does not have a customer profile")
+        
+        # Get addresses - IMPROVED LOGIC
+        billing_address = None
+        shipping_address = None
         
         if customer and use_default_address:
-            billing_address = customer.addresses.filter(address_type='billing', is_default=True).first()
-            shipping_address = customer.addresses.filter(address_type='shipping', is_default=True).first()
+            # Try to get default addresses first
+            billing_address = customer.addresses.filter(
+                address_type='billing', is_default=True
+            ).first()
+            shipping_address = customer.addresses.filter(
+                address_type='shipping', is_default=True
+            ).first()
+            
+            # If no billing address, try to use any address
+            if not billing_address:
+                billing_address = customer.addresses.filter(is_default=True).first()
+            
+            # If no shipping address, try to use any address
+            if not shipping_address:
+                shipping_address = customer.addresses.filter(is_default=True).first()
         else:
-            billing_address = validated_data.pop('billing_address_id', None)
-            shipping_address = validated_data.pop('shipping_address_id', None)
+            # Use provided address IDs
+            billing_address_id = validated_data.pop('billing_address_id', None)
+            shipping_address_id = validated_data.pop('shipping_address_id', None)
+            
+            if billing_address_id:
+                billing_address = billing_address_id
+            if shipping_address_id:
+                shipping_address = shipping_address_id
+            
+            # If only one address provided, use it for both
+            if billing_address and not shipping_address:
+                shipping_address = billing_address
+            elif shipping_address and not billing_address:
+                billing_address = shipping_address
         
-        # Check if addresses exist
-        if not billing_address or not shipping_address:
-            raise serializers.ValidationError("Billing and shipping addresses are required")
+        # Final validation - addresses must exist
+        if not billing_address:
+            raise serializers.ValidationError({
+                "billing_address": "Billing address is required. Please add an address to your profile."
+            })
+        if not shipping_address:
+            raise serializers.ValidationError({
+                "shipping_address": "Shipping address is required. Please add an address to your profile."
+            })
         
         # Calculate totals
         subtotal = Decimal('0')
@@ -295,8 +343,6 @@ class OrderCreateSerializer(serializers.ModelSerializer):
         for item_data in items_data:
             product = item_data['product']
             quantity = item_data['quantity']
-            
-            # Calculate price with discount
             price = product.final_price
             subtotal += price * quantity
         
@@ -309,13 +355,26 @@ class OrderCreateSerializer(serializers.ModelSerializer):
             shipping_cost = shipping_method.cost
             shipping_name = shipping_method.name
             carrier_name = shipping_method.carrier
+            
             # Check for free shipping threshold
-            if shipping_method.free_shipping_threshold and subtotal >= shipping_method.free_shipping_threshold:
+            if (shipping_method.free_shipping_threshold and 
+                subtotal >= shipping_method.free_shipping_threshold):
                 shipping_cost = Decimal('0')
         
-        # Calculate tax (simplified)
-        tax_rate = Decimal('10.0')  # Default tax rate
+        # Calculate tax
+        tax_rate = Decimal('10.0')
         tax_amount = subtotal * (tax_rate / 100)
+        
+        # Calculate total
+        total = subtotal + tax_amount + shipping_cost
+        
+        # Apply discount if any
+        discount_amount = Decimal('0')
+        if validated_data.get('discount_code'):
+            # TODO: Implement discount code logic
+            pass
+        
+        total -= discount_amount
         
         # Create order
         order = Order.objects.create(
@@ -326,7 +385,8 @@ class OrderCreateSerializer(serializers.ModelSerializer):
             tax_amount=tax_amount,
             tax_rate=tax_rate,
             shipping_cost=shipping_cost,
-            total=subtotal + tax_amount + shipping_cost,
+            discount_amount=discount_amount,
+            total=total,
             shipping_method=shipping_name,
             carrier=carrier_name,
             payment_method=validated_data.get('payment_method', ''),
@@ -337,8 +397,8 @@ class OrderCreateSerializer(serializers.ModelSerializer):
             ip_address=request.META.get('REMOTE_ADDR'),
             user_agent=request.META.get('HTTP_USER_AGENT', ''),
             is_guest=not request.user.is_authenticated,
-            guest_email=request.data.get('email') if not request.user.is_authenticated else '',
-            guest_phone=request.data.get('phone') if not request.user.is_authenticated else '',
+            guest_email=request.data.get('email', '') if not request.user.is_authenticated else '',
+            guest_phone=request.data.get('phone', '') if not request.user.is_authenticated else '',
         )
         
         # Create order items and update stock
@@ -374,6 +434,7 @@ class OrderCreateSerializer(serializers.ModelSerializer):
         )
         
         return order
+
 
 class OrderUpdateSerializer(serializers.ModelSerializer):
     class Meta:
@@ -415,7 +476,7 @@ class ReturnItemSerializer(serializers.ModelSerializer):
 class OrderReturnSerializer(serializers.ModelSerializer):
     items = ReturnItemSerializer(many=True, read_only=True)
     order_number = serializers.CharField(source='order.order_number', read_only=True)
-    customer_email = serializers.CharField(source='order.customer.user.email', read_only=True)
+    customer_email = serializers.SerializerMethodField()
     status_display = serializers.CharField(source='get_status_display', read_only=True)
     reason_display = serializers.CharField(source='get_reason_display', read_only=True)
     
@@ -431,13 +492,18 @@ class OrderReturnSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ['id', 'return_number', 'order', 'order_number', 
                            'customer_email', 'requested_at']
+    
+    def get_customer_email(self, obj):
+        if obj.order.customer:
+            return obj.order.customer.user.email
+        return obj.order.guest_email or ""
 
 
 class ReturnCreateSerializer(serializers.Serializer):
     order_id = serializers.PrimaryKeyRelatedField(queryset=Order.objects.filter(status='delivered'))
     reason = serializers.ChoiceField(choices=OrderReturn.RETURN_REASONS)
     reason_details = serializers.CharField(required=False)
-    items = serializers.JSONField()  # [{"order_item_id": 1, "quantity": 1, "condition": "new"}]
+    items = serializers.JSONField()
     
     def validate_items(self, value):
         if not value or not isinstance(value, list):
@@ -445,14 +511,15 @@ class ReturnCreateSerializer(serializers.Serializer):
         
         for item in value:
             if 'order_item_id' not in item or 'quantity' not in item or 'condition' not in item:
-                raise serializers.ValidationError("Each item must have order_item_id, quantity, and condition")
+                raise serializers.ValidationError(
+                    "Each item must have order_item_id, quantity, and condition"
+                )
         
         return value
     
     def validate(self, data):
         order = data['order_id']
         
-        # Check if order is within return window
         from django.utils import timezone
         if not order.delivered_date:
             raise serializers.ValidationError("Order has not been delivered yet")
@@ -468,7 +535,7 @@ class ShippingQuoteSerializer(serializers.Serializer):
     shipping_method_id = serializers.PrimaryKeyRelatedField(
         queryset=ShippingMethod.objects.filter(is_active=True)
     )
-    items = serializers.JSONField()  # [{"product_id": 1, "quantity": 2}]
+    items = serializers.JSONField()
     country = serializers.CharField(max_length=2)
     postal_code = serializers.CharField(max_length=20)
     

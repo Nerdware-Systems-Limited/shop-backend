@@ -26,11 +26,11 @@ class Address(models.Model):
     address_type = models.CharField(max_length=10, choices=ADDRESS_TYPES)
     street_address = models.CharField(max_length=255)
     apartment = models.CharField(max_length=100, blank=True)
-    county = models.CharField(max_length=100, default='Kericho')  # Added for Kenya
+    county = models.CharField(max_length=100, blank=True)  # Added for Kenya
     subcounty = models.CharField(max_length=100, blank=True)  # Added for Kenya
     ward = models.CharField(max_length=100, blank=True)  # Added for Kenya
     city = models.CharField(max_length=100)
-    state = models.CharField(max_length=100)
+    state = models.CharField(max_length=100, blank=True)
     postal_code = models.CharField(max_length=20)
     country = models.CharField(max_length=100, default='Kenya')  # Added default
     is_default = models.BooleanField(default=False)

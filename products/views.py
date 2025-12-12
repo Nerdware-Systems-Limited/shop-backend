@@ -9,7 +9,8 @@ from django.views.decorators.cache import cache_page
 from .models import Category, Brand, Product, ProductImage, Review
 from .serializers import (CategorySerializer, BrandSerializer, ProductListSerializer, 
                           ProductDetailSerializer, ProductImageSerializer, ReviewSerializer,
-                          ProductCreateUpdateSerializer)
+                          ProductCreateUpdateSerializer, CategoryCreateUpdateSerializer,
+                          BrandCreateUpdateSerializer)
 from .filters import ProductFilter
 from .permissions import IsAdminOrReadOnly
 
@@ -25,10 +26,17 @@ class CategoryViewSet(viewsets.ModelViewSet):
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['name', 'description']
     ordering_fields = ['name', 'created_at']
+    ordering = ['name']  # Explicit default ordering
 
     @method_decorator(cache_page(60 * 15))
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
+
+    def get_serializer_class(self):
+        """Use different serializers for different actions"""
+        if self.action in ['create', 'update', 'partial_update']:
+            return CategoryCreateUpdateSerializer
+        return CategorySerializer
 
     def perform_create(self, serializer):
         """Create a new category"""
@@ -42,11 +50,6 @@ class CategoryViewSet(viewsets.ModelViewSet):
         """Soft delete by setting is_active to False"""
         instance.is_active = False
         instance.save()
-    def get_serializer_class(self):
-        """Use different serializers for different actions"""
-        if self.action in ['create', 'update', 'partial_update']:
-            return CategoryCreateUpdateSerializer
-        return CategorySerializer
 
     @action(detail=True, methods=['get'])
     def products(self, request, slug=None):
@@ -69,10 +72,17 @@ class BrandViewSet(viewsets.ModelViewSet):
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['name', 'description']
     ordering_fields = ['name', 'created_at']
+    ordering = ['name']  # FIX: Add explicit default ordering
 
     @method_decorator(cache_page(60 * 15))
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
+
+    def get_serializer_class(self):
+        """Use different serializers for different actions"""
+        if self.action in ['create', 'update', 'partial_update']:
+            return BrandCreateUpdateSerializer
+        return BrandSerializer
 
     def perform_create(self, serializer):
         """Create a new brand"""
@@ -86,11 +96,6 @@ class BrandViewSet(viewsets.ModelViewSet):
         """Soft delete by setting is_active to False"""
         instance.is_active = False
         instance.save()
-    def get_serializer_class(self):
-        """Use different serializers for different actions"""
-        if self.action in ['create', 'update', 'partial_update']:
-            return BrandCreateUpdateSerializer
-        return BrandSerializer
 
     @action(detail=True, methods=['get'])
     def products(self, request, slug=None):
@@ -113,6 +118,7 @@ class ProductViewSet(viewsets.ModelViewSet):
     filterset_class = ProductFilter
     search_fields = ['name', 'description', 'sku', 'brand__name']
     ordering_fields = ['price', 'created_at', 'name', 'stock_quantity']
+    ordering = ['-created_at']  # Explicit default ordering
 
     def get_serializer_class(self):
         """Use different serializers for different actions"""
@@ -152,7 +158,7 @@ class ProductViewSet(viewsets.ModelViewSet):
         products = Product.objects.filter(
             stock_quantity__lte=F('low_stock_threshold'),
             is_active=True
-        )
+        ).order_by('-created_at')  # Explicit ordering for consistency
         serializer = ProductListSerializer(products, many=True)
         return Response(serializer.data)
 

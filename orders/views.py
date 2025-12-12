@@ -31,14 +31,17 @@ from .tasks import send_order_confirmation_email, update_order_status_task
 
 class OrderViewSet(viewsets.ModelViewSet):
     """
-    God-Level Order Management ViewSet
+    Order Management ViewSet
     """
     queryset = Order.objects.select_related(
         'customer', 'customer__user', 
         'billing_address', 'shipping_address'
     ).prefetch_related(
-        'items', 'items__product', 'status_history', 'notes'
+        'items', 'items__product', 'status_history'
     ).all()
+
+    lookup_field = 'order_number'
+    lookup_value_regex = '[^/]+'
     
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_class = OrderFilter
@@ -88,27 +91,38 @@ class OrderViewSet(viewsets.ModelViewSet):
     
     def create(self, request, *args, **kwargs):
         """Create a new order (supports guest checkout)"""
-        print("Request data for order creation:", request.data)
         serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        print("Serialized data:", serializer.validated_data)
+        
+        # Check if serializer is valid
+        if not serializer.is_valid():
+            print("Validation errors:", serializer.errors)
+            return Response(
+                serializer.errors,
+                status=status.HTTP_400_BAD_REQUEST
+            )
         
         try:
             order = serializer.save()
             
             # Send confirmation email (async)
-            send_order_confirmation_email.delay(order.id)
+            try:
+                send_order_confirmation_email.delay(order.id)
+            except:
+                print("Warning: Could not send confirmation email")
             
             return Response(
                 OrderDetailSerializer(order, context=self.get_serializer_context()).data,
                 status=status.HTTP_201_CREATED
             )
         except Exception as e:
+            print("Error creating order:", str(e))
+            import traceback
+            traceback.print_exc()
             return Response(
                 {'error': str(e)},
                 status=status.HTTP_400_BAD_REQUEST
             )
-    
+        
     @action(detail=True, methods=['post'])
     def cancel(self, request, pk=None):
         """Cancel an order"""
@@ -304,21 +318,62 @@ class OrderViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['get'])
     def my_orders(self, request):
         """Get current user's orders"""
-        if not request.user.is_authenticated:
+        try:
+            if not request.user.is_authenticated:
+                return Response(
+                    {'error': 'Authentication required'},
+                    status=status.HTTP_401_UNAUTHORIZED
+                )
+            
+            # Check if user has a customer profile
+            try:
+                customer = request.user.customer
+            except Exception as e:
+                print(f"ERROR: User has no customer profile: {e}")
+                return Response(
+                    {'error': 'User does not have a customer profile', 'detail': str(e)},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            # Get orders
+            try:
+                orders = self.get_queryset().filter(customer__user=request.user)
+            except Exception as e:
+                print(f"ERROR querying orders: {e}")
+                import traceback
+                traceback.print_exc()
+                return Response(
+                    {'error': 'Error querying orders', 'detail': str(e)},
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                )
+            
+            # Paginate
+            try:
+                page = self.paginate_queryset(orders)
+                
+                if page is not None:
+                    serializer = OrderListSerializer(page, many=True)
+                    return self.get_paginated_response(serializer.data)
+                
+                serializer = OrderListSerializer(orders, many=True)
+                return Response(serializer.data)
+            except Exception as e:
+                print(f"ERROR during serialization/pagination: {e}")
+                import traceback
+                traceback.print_exc()
+                return Response(
+                    {'error': 'Error serializing orders', 'detail': str(e)},
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                )
+                
+        except Exception as e:
+            print(f"UNEXPECTED ERROR in my_orders: {e}")
+            import traceback
+            traceback.print_exc()
             return Response(
-                {'error': 'Authentication required'},
-                status=status.HTTP_401_UNAUTHORIZED
+                {'error': 'Unexpected error', 'detail': str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
-        
-        orders = self.get_queryset().filter(customer__user=request.user)
-        page = self.paginate_queryset(orders)
-        
-        if page is not None:
-            serializer = OrderListSerializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
-        
-        serializer = OrderListSerializer(orders, many=True)
-        return Response(serializer.data)
     
     @action(detail=False, methods=['get'])
     def recent(self, request):
@@ -646,17 +701,21 @@ class OrderNoteViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     
     def get_queryset(self):
-        order_id = self.kwargs.get('order_pk')
-        queryset = OrderNote.objects.filter(order_id=order_id)
+        order_number = self.kwargs.get('order_number')  # Changed from 'order_pk'
         
-        # Non-staff users can only see customer-visible notes
-        if not self.request.user.is_staff:
-            queryset = queryset.filter(is_customer_visible=True)
-        
-        return queryset
+        try:
+            order = Order.objects.get(order_number=order_number)
+            queryset = OrderNote.objects.filter(order=order)
+            
+            if not self.request.user.is_staff:
+                queryset = queryset.filter(is_customer_visible=True)
+            
+            return queryset
+        except Order.DoesNotExist:
+            return OrderNote.objects.none()
     
     def perform_create(self, serializer):
-        order = Order.objects.get(pk=self.kwargs['order_pk'])
+        order = Order.objects.get(pk=self.kwargs['order_number'])
         serializer.save(order=order)
 
 
