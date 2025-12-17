@@ -1,0 +1,21 @@
+🚨 ADMIN ALERT: {{ alert_type }}
+
+ALERT MESSAGE:
+{{ message }}
+
+ORDER DETAILS:
+==============
+Order Number: {{ order.order_number }}
+Customer: {% if order.customer %}{{ order.customer.user.email }}{% else %}{{ order.guest_email }}{% endif %}
+Status: {{ order.status }}
+Payment Status: {{ order.payment_status }}
+Total: {{ order.currency }} {{ order.total }}
+Created: {{ order.created_at }}
+
+TIMESTAMP: {{ timestamp }}
+
+View in admin panel: {{ site_url }}/admin/orders/{{ order.id }}
+
+---
+This is an automated admin alert from {{ site_name }}
+Do not reply to this email

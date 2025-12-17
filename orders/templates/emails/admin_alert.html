@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Courier New', monospace; background-color: #1e1e1e; color: #d4d4d4; padding: 20px; }
+        .email-container { max-width: 800px; margin: 0 auto; background-color: #252526; border: 2px solid #ff5722; border-radius: 8px; overflow: hidden; }
+        .header { background-color: #ff5722; color: white; padding: 20px 30px; }
+        .header h1 { font-size: 20px; font-weight: bold; }
+        .content { padding: 30px; }
+        .alert-box { background-color: #3c3c3c; border-left: 4px solid #ff5722; padding: 20px; margin: 20px 0; }
+        .code-block { background-color: #1e1e1e; border: 1px solid #3c3c3c; padding: 15px; border-radius: 4px; margin: 15px 0; overflow-x: auto; }
+        .footer { background-color: #1e1e1e; padding: 20px; text-align: center; color: #858585; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <div class="header">
+            <h1>🚨 ADMIN ALERT: {{ alert_type }}</h1>
+        </div>
+
+        <div class="content">
+            <div class="alert-box">
+                <p style="color: #ff5722; font-weight: bold; margin-bottom: 10px;">⚠️ ALERT MESSAGE:</p>
+                <p style="color: #d4d4d4;">{{ message }}</p>
+            </div>
+
+            <div class="code-block">
+                <p style="color: #858585; margin-bottom: 10px;">ORDER DETAILS:</p>
+                <p>Order Number: <span style="color: #4ec9b0;">{{ order.order_number }}</span></p>
+                <p>Customer: <span style="color: #4ec9b0;">{% if order.customer %}{{ order.customer.user.email }}{% else %}{{ order.guest_email }}{% endif %}</span></p>
+                <p>Status: <span style="color: #4ec9b0;">{{ order.status }}</span></p>
+                <p>Payment Status: <span style="color: #4ec9b0;">{{ order.payment_status }}</span></p>
+                <p>Total: <span style="color: #4ec9b0;">{{ order.currency }} {{ order.total }}</span></p>
+                <p>Created: <span style="color: #4ec9b0;">{{ order.created_at }}</span></p>
+            </div>
+
+            <div class="code-block">
+                <p style="color: #858585; margin-bottom: 10px;">TIMESTAMP:</p>
+                <p style="color: #ce9178;">{{ timestamp }}</p>
+            </div>
+
+            <p style="margin-top: 30px; text-align: center;">
+                <a href="{{ site_url }}/admin/orders/{{ order.id }}" 
+                   style="display: inline-block; background-color: #ff5722; color: white; 
+                          text-decoration: none; padding: 12px 30px; border-radius: 4px; 
+                          font-weight: bold;">
+                    VIEW IN ADMIN PANEL
+                </a>
+            </p>
+        </div>
+
+        <div class="footer">
+            <p>This is an automated admin alert from {{ site_name }}</p>
+            <p style="margin-top: 10px;">Do not reply to this email</p>
+        </div>
+    </div>
+</body>
+</html>

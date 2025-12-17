@@ -1,0 +1,24 @@
+Hi {% if order.customer %}{{ order.customer.user.first_name }}{% else %}there{% endif %},
+
+Your order has been cancelled as requested.
+
+CANCELLATION DETAILS
+====================
+Order Number: {{ order.order_number }}
+Cancelled on: {{ order.cancelled_at|date:"F d, Y g:i A" }}
+Order Total: {{ order.currency }} {{ order.total }}
+
+{% if order.payment_status == 'refunded' %}
+REFUND INFORMATION
+==================
+A refund of {{ order.currency }} {{ order.total }} will be processed to your original payment method within 5-7 business days.
+{% endif %}
+
+We're sorry to see you go. If you change your mind, we'd love to have you back!
+
+Continue shopping: {{ site_url }}/products
+
+Questions? Contact us at {{ support_email }}
+
+---
+{{ site_name }}

@@ -47,7 +47,7 @@ urlpatterns = [
     path('api/customers/', include('customers.urls')),
     path('api/orders/', include('orders.urls')),
     path('api/inventory/', include('inventory.urls')),
-    # path('api/payments/', include('payments.urls')),
+    path('api/payments/', include('payments.urls')),
     path('api/auth/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/auth/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),

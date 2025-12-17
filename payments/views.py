@@ -334,7 +334,7 @@ class MpesaPaymentMethodViewSet(viewsets.ModelViewSet):
     """
     Manage customer's M-Pesa payment methods
     """
-    serializer_class MpesaPaymentMethodSerializer
+    serializer_class = MpesaPaymentMethodSerializer
     permission_classes = [IsAuthenticated]
     
     def get_queryset(self):

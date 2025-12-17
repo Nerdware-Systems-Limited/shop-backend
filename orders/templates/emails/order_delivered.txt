@@ -1,0 +1,26 @@
+Hi {% if order.customer %}{{ order.customer.user.first_name }}{% else %}there{% endif %},
+
+🎉 GREAT NEWS! Your order has been delivered!
+
+ORDER DELIVERED
+===============
+Order Number: {{ order.order_number }}
+Delivered on: {{ order.delivered_date|date:"F d, Y" }} at {{ order.delivered_date|time:"g:i A" }}
+
+We hope you love your purchase! If you have a moment, we'd appreciate your feedback.
+
+WRITE A REVIEW
+==============
+Your review helps us improve and helps other customers make informed decisions.
+Review your order: {{ site_url }}/orders/{{ order.order_number }}/review
+
+NEED SUPPORT?
+=============
+If you have any issues with your order, please contact us:
+Email: {{ support_email }}
+
+Thank you for choosing {{ site_name }}!
+
+---
+{{ site_name }}
+Making your audio dreams come true

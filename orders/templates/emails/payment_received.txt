@@ -1,0 +1,22 @@
+Hi {% if order.customer %}{{ order.customer.user.first_name }}{% else %}there{% endif %},
+
+💰 PAYMENT RECEIVED
+
+We've successfully received your payment!
+
+PAYMENT DETAILS
+===============
+Order Number: {{ order.order_number }}
+Amount Paid: {{ order.currency }} {{ order.total }}
+Payment Method: {{ order.get_payment_method_display }}
+Payment Date: {{ order.paid_at|date:"F d, Y g:i A" }}
+
+Your order is now being processed and will be shipped soon.
+
+View your order: {{ site_url }}/orders/{{ order.order_number }}
+
+Thank you for your purchase!
+
+---
+{{ site_name }}
+{{ support_email }}

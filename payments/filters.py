@@ -1,3 +1,6 @@
+from django_filters import rest_framework as filters
+from .models import MpesaTransaction, MpesaCallback
+
 class MpesaTransactionFilter(filters.FilterSet):
     """Filter for M-Pesa transactions"""
     

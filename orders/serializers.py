@@ -536,7 +536,7 @@ class ShippingQuoteSerializer(serializers.Serializer):
         queryset=ShippingMethod.objects.filter(is_active=True)
     )
     items = serializers.JSONField()
-    country = serializers.CharField(max_length=2)
+    country = serializers.CharField(max_length=100)
     postal_code = serializers.CharField(max_length=20)
     
     def validate_items(self, value):

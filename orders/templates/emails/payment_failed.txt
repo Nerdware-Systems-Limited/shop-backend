@@ -1,0 +1,30 @@
+Hi {% if order.customer %}{{ order.customer.user.first_name }}{% else %}there{% endif %},
+
+⚠️ PAYMENT FAILED
+
+Unfortunately, we were unable to process the payment for your order {{ order.order_number }}.
+
+COMMON REASONS FOR PAYMENT FAILURE
+===================================
+• Insufficient funds
+• Incorrect card details
+• Card expired
+• Bank security restrictions
+
+ORDER DETAILS
+=============
+Order Number: {{ order.order_number }}
+Order Total: {{ order.currency }} {{ order.total }}
+Payment Method: {{ order.get_payment_method_display }}
+
+Don't worry! Your order is still reserved. Please try again with a different payment method.
+
+Retry payment: {{ site_url }}/orders/{{ order.order_number }}/retry-payment
+
+NEED HELP?
+==========
+If you continue to experience issues, please contact us at {{ support_email }}
+
+---
+{{ site_name }}
+Making your audio dreams come true

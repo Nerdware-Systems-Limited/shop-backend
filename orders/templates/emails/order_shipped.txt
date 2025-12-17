@@ -1,0 +1,19 @@
+Hi {% if order.customer %}{{ order.customer.user.first_name }}{% else %}there{% endif %},
+
+Great news! Your order has been shipped!
+
+ORDER: {{ order.order_number }}
+CARRIER: {{ order.carrier }}
+TRACKING NUMBER: {{ order.tracking_number }}
+{% if order.estimated_delivery %}ESTIMATED DELIVERY: {{ order.estimated_delivery|date:"F d, Y" }}{% endif %}
+
+{% if order.tracking_url %}Track your package: {{ order.tracking_url }}{% endif %}
+
+Your package is on its way and should arrive within 2-5 business days.
+
+View your order: {{ site_url }}/orders/{{ order.order_number }}
+
+Need help? Contact us at {{ support_email }}
+
+Thanks,
+The {{ site_name }} Team

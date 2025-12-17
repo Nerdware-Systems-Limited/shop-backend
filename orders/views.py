@@ -12,7 +12,7 @@ from django.core.cache import cache
 from datetime import datetime, timedelta
 import csv
 import json
-
+from products.models import Product
 from .models import (
     Order, OrderItem, OrderStatusHistory, ShippingMethod, 
     OrderReturn, ReturnItem, OrderNote
@@ -27,6 +27,8 @@ from .serializers import (
 from .filters import OrderFilter, OrderReturnFilter
 from .permissions import IsOrderOwnerOrAdmin, CanModifyOrder, CanCreateReturn
 from .tasks import send_order_confirmation_email, update_order_status_task
+from .notifications import send_order_confirmation
+from payments.services import MpesaPaymentService
 
 
 class OrderViewSet(viewsets.ModelViewSet):
@@ -103,10 +105,31 @@ class OrderViewSet(viewsets.ModelViewSet):
         
         try:
             order = serializer.save()
+
+            # Check if M-Pesa payment should be initiated
+            payment_method = request.data.get('payment_method')
+            payment_number = request.data.get('payment_number')
+            
+            if payment_method == 'MPesa' and payment_number:
+                try:
+                    # Initiate M-Pesa payment
+                    service = MpesaPaymentService()
+                    transaction = service.initiate_order_payment(order, payment_number)
+                    
+                    # Store transaction reference in order if needed
+                    order.mpesa_transaction_id = transaction.id
+                    order.save()
+                    
+                except Exception as mpesa_error:
+                    print(f"M-Pesa initiation error: {str(mpesa_error)}")
+                    # You might want to handle this differently - maybe mark order as pending payment
+                    # For now, we'll just log the error and continue
+                    import traceback
+                    traceback.print_exc()
             
             # Send confirmation email (async)
             try:
-                send_order_confirmation_email.delay(order.id)
+                send_order_confirmation(order)
             except:
                 print("Warning: Could not send confirmation email")
             
@@ -532,7 +555,14 @@ class ShippingMethodViewSet(viewsets.ReadOnlyModelViewSet):
         total_value = 0
         
         for item_data in items:
-            product = Product.objects.get(id=item_data['product_id'])
+            try:
+                product = Product.objects.get(id=item_data['product_id'])
+            except Product.DoesNotExist:
+                return Response(
+                    print(f"Product with id {item_data['product_id']} not found"),
+                    {'error': f'Product with id {item_data["product_id"]} not found'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
             quantity = item_data['quantity']
             
             if product.weight:
@@ -548,17 +578,18 @@ class ShippingMethodViewSet(viewsets.ReadOnlyModelViewSet):
         # Check weight limit
         if shipping_method.max_weight and total_weight > shipping_method.max_weight:
             return Response(
+                # print(f"Total weight {total_weight} exceeds max {shipping_method.max_weight}"),
                 {'error': f'Total weight ({total_weight}kg) exceeds maximum ({shipping_method.max_weight}kg) for this shipping method'},
                 status=status.HTTP_400_BAD_REQUEST
             )
         
         # Check country restrictions
-        if (shipping_method.allowed_countries and 
-            country not in shipping_method.allowed_countries):
-            return Response(
-                {'error': f'Shipping method not available for {country}'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+        # if (shipping_method.allowed_countries and 
+        #     country not in shipping_method.allowed_countries):
+        #     return Response(
+        #         {'error': f'Shipping method not available for {country}'},
+        #         status=status.HTTP_400_BAD_REQUEST
+        #     )
         
         return Response({
             'shipping_method': ShippingMethodSerializer(shipping_method).data,

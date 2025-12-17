@@ -1,0 +1,41 @@
+Order Confirmation - {{ order.order_number }}
+
+Hi {% if order.customer %}{{ order.customer.user.first_name }}{% else %}Customer{% endif %},
+
+Thank you for your order!
+
+Order Details:
+--------------
+Order Number: {{ order.order_number }}
+Order Date: {{ order.created_at|date:"F d, Y" }}
+Order Status: {{ order.get_status_display }}
+
+Items:
+{% for item in order.items.all %}
+- {{ item.product.name }} x {{ item.quantity }} - ${{ item.total }}
+{% endfor %}
+
+Order Summary:
+--------------
+Subtotal: ${{ order.subtotal }}
+Tax: ${{ order.tax_amount }}
+Shipping: ${{ order.shipping_cost }}
+{% if order.discount_amount %}Discount: -${{ order.discount_amount }}{% endif %}
+Total: ${{ order.total }}
+
+Shipping Address:
+{% if order.shipping_address %}
+{{ order.shipping_address.street_address }}
+{{ order.shipping_address.city }}, {{ order.shipping_address.state }} {{ order.shipping_address.postal_code }}
+{{ order.shipping_address.country }}
+{% endif %}
+
+We'll send you an email when your order ships!
+
+Questions? Contact us at {{ support_email }}
+
+Thanks for shopping with {{ site_name }}!
+
+---
+{{ site_name }}
+{{ site_url }}

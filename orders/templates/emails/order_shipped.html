@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Shipped</title>
+    <style>
+        /* Reuse base styles from order_confirmation.html */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f5f5f5; padding: 20px; line-height: 1.6; }
+        .email-container { max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); }
+        .header { background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%); color: white; padding: 40px 30px; text-align: center; }
+        .header h1 { font-size: 28px; margin-bottom: 10px; font-weight: 600; }
+        .content { padding: 40px 30px; }
+        .tracking-box { background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%); border-radius: 12px; padding: 30px; margin: 30px 0; text-align: center; }
+        .tracking-number { font-size: 24px; font-weight: bold; color: #1976D2; font-family: 'Courier New', monospace; letter-spacing: 2px; margin: 15px 0; }
+        .carrier-logo { font-size: 48px; margin-bottom: 15px; }
+        .track-button { display: inline-block; background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%); color: white; text-decoration: none; padding: 15px 40px; border-radius: 8px; font-weight: 600; font-size: 16px; margin: 20px 0; }
+        .timeline { margin: 30px 0; }
+        .timeline-item { display: flex; align-items: flex-start; margin-bottom: 25px; }
+        .timeline-icon { width: 40px; height: 40px; border-radius: 50%; background-color: #2196F3; color: white; display: flex; align-items: center; justify-content: center; margin-right: 20px; flex-shrink: 0; }
+        .timeline-icon.completed { background-color: #4CAF50; }
+        .timeline-content h3 { font-size: 16px; color: #333; margin-bottom: 5px; }
+        .timeline-content p { color: #666; font-size: 14px; }
+        .footer { background-color: #f8f9fa; padding: 30px; text-align: center; color: #666; font-size: 14px; }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <div class="header">
+            <h1>📦 Your Order Has Shipped!</h1>
+            <p>Your package is on its way</p>
+        </div>
+
+        <div class="content">
+            <p style="font-size: 16px; color: #333; margin-bottom: 20px;">
+                Hi {% if order.customer %}{{ order.customer.user.first_name }}{% else %}there{% endif %},
+            </p>
+            
+            <p style="font-size: 16px; color: #555; margin-bottom: 30px;">
+                Great news! Your order <strong>{{ order.order_number }}</strong> has been shipped and is on its way to you.
+            </p>
+
+            <div class="tracking-box">
+                <div class="carrier-logo">🚚</div>
+                <p style="color: #666; margin-bottom: 10px;">Carrier: <strong>{{ order.carrier }}</strong></p>
+                <p style="color: #666; font-size: 14px;">Tracking Number:</p>
+                <div class="tracking-number">{{ order.tracking_number }}</div>
+                {% if order.estimated_delivery %}
+                <p style="color: #1976D2; font-weight: 600; margin-top: 15px;">
+                    Estimated Delivery: {{ order.estimated_delivery|date:"F d, Y" }}
+                </p>
+                {% endif %}
+                {% if order.tracking_url %}
+                <a href="{{ order.tracking_url }}" class="track-button">Track Your Package</a>
+                {% endif %}
+            </div>
+
+            <div class="timeline">
+                <h2 style="font-size: 20px; color: #333; margin-bottom: 25px;">Shipping Timeline</h2>
+                
+                <div class="timeline-item">
+                    <div class="timeline-icon completed">✓</div>
+                    <div class="timeline-content">
+                        <h3>Order Confirmed</h3>
+                        <p>{{ order.created_at|date:"F d, Y g:i A" }}</p>
+                    </div>
+                </div>
+
+                <div class="timeline-item">
+                    <div class="timeline-icon completed">✓</div>
+                    <div class="timeline-content">
+                        <h3>Package Shipped</h3>
+                        <p>{{ order.shipped_date|date:"F d, Y g:i A" }}</p>
+                    </div>
+                </div>
+
+                <div class="timeline-item">
+                    <div class="timeline-icon">🚚</div>
+                    <div class="timeline-content">
+                        <h3>In Transit</h3>
+                        <p>Your package is on the way</p>
+                    </div>
+                </div>
+
+                <div class="timeline-item">
+                    <div class="timeline-icon">📦</div>
+                    <div class="timeline-content">
+                        <h3>Delivery Expected</h3>
+                        <p>{% if order.estimated_delivery %}{{ order.estimated_delivery|date:"F d, Y" }}{% else %}2-5 business days{% endif %}</p>
+                    </div>
+                </div>
+            </div>
+
+            <div style="margin-top: 40px; padding: 20px; background-color: #fff3cd; border-left: 4px solid #ffc107; border-radius: 4px;">
+                <p style="margin: 0; color: #856404; font-weight: 600;">📍 Delivery Instructions</p>
+                <p style="margin: 10px 0 0 0; color: #856404;">
+                    Please ensure someone is available to receive the package. If no one is home, the carrier will leave a delivery notice.
+                </p>
+            </div>
+
+            <center style="margin-top: 30px;">
+                <a href="{{ site_url }}/orders/{{ order.order_number }}" style="display: inline-block; background-color: #f5f5f5; color: #333; text-decoration: none; padding: 12px 30px; border-radius: 8px; font-weight: 600;">
+                    View Order Details
+                </a>
+            </center>
+        </div>
+
+        <div class="footer">
+            <p>Need help? Contact us at <a href="mailto:{{ support_email }}" style="color: #2196F3;">{{ support_email }}</a></p>
+            <p style="margin-top: 15px; font-size: 12px; color: #999;">
+                {{ site_name }} | Making your audio dreams come true
+            </p>
+        </div>
+    </div>
+</body>
+</html>

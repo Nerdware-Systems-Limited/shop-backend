@@ -83,7 +83,7 @@ ROOT_URLCONF = 'backend.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'templates',],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -196,6 +196,15 @@ CACHES = {
     }
 }
 
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = config('EMAIL_HOST_USER')  # your-email@gmail.com
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')  # App password (not regular password!)
+DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='SoundWaveAudio <noreply@soundwave.com>')
+SUPPORT_EMAIL = config('SUPPORT_EMAIL', default='support@soundwave.com')
+
 # M-Pesa Configuration
 MPESA_CONFIG = {
     'ENVIRONMENT': 'sandbox',  # or 'production'
@@ -215,7 +224,7 @@ CELERY_BEAT_SCHEDULE = {
     },
 }
 
-# Logging
+# Loggingem
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,

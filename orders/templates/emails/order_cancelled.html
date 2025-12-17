@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f5f5f5; padding: 20px; }
+        .email-container { max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); }
+        .header { background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%); color: white; padding: 40px 30px; text-align: center; }
+        .content { padding: 40px 30px; }
+        .refund-box { background-color: #fff3cd; border-left: 4px solid #ffc107; border-radius: 4px; padding: 20px; margin: 30px 0; }
+        .footer { background-color: #f8f9fa; padding: 30px; text-align: center; color: #666; font-size: 14px; }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <div class="header">
+            <h1>Order Cancelled</h1>
+            <p>Your order has been cancelled</p>
+        </div>
+
+        <div class="content">
+            <p style="font-size: 16px; color: #333; margin-bottom: 20px;">
+                Hi {% if order.customer %}{{ order.customer.user.first_name }}{% else %}there{% endif %},
+            </p>
+            
+            <p style="font-size: 16px; color: #555; margin-bottom: 30px;">
+                Your order <strong>{{ order.order_number }}</strong> has been cancelled as requested.
+            </p>
+
+            {% if order.payment_status == 'refunded' %}
+            <div class="refund-box">
+                <p style="margin: 0; color: #856404; font-weight: 600;">💰 Refund Information</p>
+                <p style="margin: 10px 0 0 0; color: #856404;">
+                    A refund of {{ order.currency }} {{ order.total }} will be processed to your original payment method within 5-7 business days.
+                </p>
+            </div>
+            {% endif %}
+
+            <div style="margin-top: 30px; padding: 20px; background-color: #f8f9fa; border-radius: 8px;">
+                <h3 style="font-size: 16px; color: #333; margin-bottom: 15px;">Cancellation Details</h3>
+                <p style="color: #666; line-height: 1.8;">
+                    <strong>Order Number:</strong> {{ order.order_number }}<br>
+                    <strong>Cancelled on:</strong> {{ order.cancelled_at|date:"F d, Y g:i A" }}<br>
+                    <strong>Order Total:</strong> {{ order.currency }} {{ order.total }}
+                </p>
+            </div>
+
+            <p style="margin-top: 30px; font-size: 16px; color: #555; text-align: center;">
+                We're sorry to see you go. If you change your mind, we'd love to have you back!
+            </p>
+
+            <center style="margin-top: 30px;">
+                <a href="{{ site_url }}/products" style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; text-decoration: none; padding: 15px 40px; border-radius: 8px; font-weight: 600;">
+                    Continue Shopping
+                </a>
+            </center>
+        </div>
+
+        <div class="footer">
+            <p>Questions? Contact us at <a href="mailto:{{ support_email }}" style="color: #667eea;">{{ support_email }}</a></p>
+            <p style="margin-top: 15px;">{{ site_name }}</p>
+        </div>
+    </div>
+</body>
+</html>

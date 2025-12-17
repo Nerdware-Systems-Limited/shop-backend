@@ -1,0 +1,29 @@
+Hi {% if order.customer %}{{ order.customer.user.first_name }}{% else %}there{% endif %},
+
+⚙️ ORDER PROCESSING
+
+Your order is now being prepared for shipment!
+
+ORDER DETAILS
+=============
+Order Number: {{ order.order_number }}
+Status: Processing
+Items: {{ order.items.count }}
+
+We're carefully preparing your order and it will ship soon. You'll receive another email with tracking information once it's on its way.
+
+WHAT'S NEXT?
+============
+1. Order is being packed
+2. Quality check
+3. Shipping label created
+4. Package handed to carrier
+5. You'll receive tracking info
+
+Track your order: {{ site_url }}/orders/{{ order.order_number }}
+
+Questions? Contact us at {{ support_email }}
+
+---
+{{ site_name }}
+Making your audio dreams come true
