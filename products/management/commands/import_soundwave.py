@@ -1,5 +1,4 @@
 from django.core.management.base import BaseCommand, CommandError
-from django.core.files import File
 from django.db import transaction
 from products.models import Category, Brand, Product, ProductImage
 from decimal import Decimal
@@ -9,14 +8,14 @@ import re
 
 
 class Command(BaseCommand):
-    help = 'Import scraped Soundwave Audio products from JSON file'
+    help = 'Import scraped Soundwave Audio products from JSON file with S3 image paths'
 
     def add_arguments(self, parser):
         parser.add_argument(
             '--file',
             type=str,
-            default='soundwave_audio_cleaned.json',
-            help='Path to JSON file (default: soundwave_audio_cleaned.json)'
+            default='alldata_updated1.json',
+            help='Path to JSON file (default: alldata_updated1.json)'
         )
         parser.add_argument(
             '--clear',
@@ -29,7 +28,7 @@ class Command(BaseCommand):
         clear_existing = options['clear']
 
         self.stdout.write(self.style.SUCCESS('\n' + '='*70))
-        self.stdout.write(self.style.SUCCESS('🚀 SOUNDWAVE PRODUCTS IMPORT'))
+        self.stdout.write(self.style.SUCCESS('🚀 SOUNDWAVE PRODUCTS IMPORT (S3 Mode)'))
         self.stdout.write(self.style.SUCCESS('='*70 + '\n'))
 
         # Check if file exists
@@ -57,6 +56,7 @@ class Command(BaseCommand):
             'brands': 0,
             'products': 0,
             'images': 0,
+            'skipped_images': 0,
             'errors': 0
         }
 
@@ -75,6 +75,7 @@ class Command(BaseCommand):
                     if result['product_created']:
                         stats['products'] += 1
                     stats['images'] += result['images_count']
+                    stats['skipped_images'] += result['skipped_images']
 
             except Exception as e:
                 stats['errors'] += 1
@@ -91,11 +92,13 @@ class Command(BaseCommand):
             'category_created': False,
             'brand_created': False,
             'product_created': False,
-            'images_count': 0
+            'images_count': 0,
+            'skipped_images': 0
         }
 
         # Progress indicator
-        self.stdout.write(f'   [{index}/{total}] {data["name"][:50]}...')
+        product_name = data.get('name', 'Unknown Product')[:50]
+        self.stdout.write(f'   [{index}/{total}] {product_name}...')
 
         # Get or create Category
         category_name = data.get('category', 'Car Audio').strip()
@@ -117,8 +120,9 @@ class Command(BaseCommand):
         price = self._extract_price(data.get('price', 'kes 0'))
 
         # Create or update Product
+        sku = data.get('sku', f'PROD-{index:04d}')
         product, created = Product.objects.update_or_create(
-            sku=data.get('sku', f'PROD-{index:04d}'),
+            sku=sku,
             defaults={
                 'name': data.get('name', 'Unknown Product'),
                 'description': data.get('full_description', data.get('short_description', '')),
@@ -133,17 +137,28 @@ class Command(BaseCommand):
         )
         result['product_created'] = created
 
-        # Handle main image only (as primary)
+        # Handle S3 image paths
         if created:  # Only add images for new products
-            main_image_path = data.get('downloaded_images', {}).get('main_image', '')
-            if main_image_path and os.path.exists(f'products/{main_image_path}'):
-                self._add_product_image(product, f'products/{main_image_path}', is_primary=True)
-                result['images_count'] += 1
+            downloaded_images = data.get('downloaded_images', {})
+            main_image_path = downloaded_images.get('main_image', '')
+            
+            if main_image_path:
+                # Store the S3 path directly
+                image_result = self._create_product_image_with_s3_path(
+                    product, 
+                    main_image_path, 
+                    is_primary=True
+                )
+                if image_result:
+                    result['images_count'] += 1
+                else:
+                    result['skipped_images'] += 1
 
         self.stdout.write(
             self.style.SUCCESS(
                 f'      ✅ {"Created" if created else "Updated"} | '
-                f'Images: {result["images_count"]}'
+                f'Images: {result["images_count"]} | '
+                f'SKU: {sku}'
             )
         )
 
@@ -171,26 +186,36 @@ class Command(BaseCommand):
         
         return specs
 
-    def _add_product_image(self, product, image_path, is_primary=False):
-        """Add image to product"""
+    def _create_product_image_with_s3_path(self, product, s3_path, is_primary=False):
+        """Create ProductImage record with S3 path stored directly"""
         try:
-            with open(image_path, 'rb') as img_file:
-                # Get filename from path
-                filename = os.path.basename(image_path)
-                
-                # Create ProductImage
-                product_image = ProductImage(
-                    product=product,
-                    alt_text=product.name,
-                    is_primary=is_primary,
-                    order=0 if is_primary else 1
+            # Validate S3 path format
+            if not s3_path or not isinstance(s3_path, str):
+                self.stdout.write(
+                    self.style.WARNING(f'      ⚠️  Invalid S3 path: {s3_path}')
                 )
-                product_image.image.save(filename, File(img_file), save=True)
-                
+                return False
+            
+            # Create ProductImage with the S3 path
+            # The 'image' field will store the S3 path (e.g., "products/main_image.webp")
+            product_image = ProductImage.objects.create(
+                product=product,
+                image=s3_path,  # Store S3 path directly
+                alt_text=product.name,
+                is_primary=is_primary,
+                order=0 if is_primary else 1
+            )
+            
+            self.stdout.write(
+                self.style.SUCCESS(f'      📸 Added S3 image: {s3_path}')
+            )
+            return True
+            
         except Exception as e:
             self.stdout.write(
-                self.style.WARNING(f'      ⚠️  Image error: {str(e)}')
+                self.style.WARNING(f'      ⚠️  Image error for {s3_path}: {str(e)}')
             )
+            return False
 
     def _print_report(self, stats):
         """Print final import report"""
@@ -203,6 +228,11 @@ class Command(BaseCommand):
         self.stdout.write(f"✅ Products imported: {stats['products']}")
         self.stdout.write(f"✅ Images added: {stats['images']}")
         
+        if stats['skipped_images'] > 0:
+            self.stdout.write(
+                self.style.WARNING(f"⚠️  Images skipped: {stats['skipped_images']}")
+            )
+        
         if stats['errors'] > 0:
             self.stdout.write(
                 self.style.WARNING(f"⚠️  Errors encountered: {stats['errors']}")
@@ -213,8 +243,9 @@ class Command(BaseCommand):
         self.stdout.write('='*70 + '\n')
         
         # Print next steps
-        self.stdout.write('\n📝 Next Steps:')
-        self.stdout.write('   1. Run: python manage.py shell')
-        self.stdout.write('   2. Verify: Product.objects.count()')
-        self.stdout.write('   3. Check admin: http://localhost:8000/admin')
-        self.stdout.write('   4. Test API: http://localhost:8000/api/products/\n')
+        self.stdout.write('\n🔍 Next Steps:')
+        self.stdout.write('   1. Verify products: Product.objects.count()')
+        self.stdout.write('   2. Check images: ProductImage.objects.count()')
+        self.stdout.write('   3. Admin panel: http://localhost:8000/admin')
+        self.stdout.write('   4. API endpoint: http://localhost:8000/api/products/')
+        self.stdout.write('\n💡 Note: Images are stored as S3 paths and will be served from your S3 bucket\n')

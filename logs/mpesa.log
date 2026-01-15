@@ -5086,3 +5086,50 @@ Successfully returning transaction data for ws_CO_19122025113104412720624242
 Transaction status updated to: failed
 Successfully returning transaction data for ws_CO_19122025113104412720624242
 Successfully returning transaction data for ws_CO_19122025113104412720624242
+New M-Pesa access token fetched for Sandbox Config
+STK Push initiated successfully: ws_CO_10012026170557546720624242
+=== Check Payment Status Request ===
+Request Data: {'checkout_request_id': 'ws_CO_10012026170557546720624242'}
+User: patrick
+Looking for transaction with checkout_request_id: ws_CO_10012026170557546720624242
+=== Check Payment Status Request ===
+Request Data: {'checkout_request_id': 'ws_CO_10012026170557546720624242'}
+User: patrick
+Looking for transaction with checkout_request_id: ws_CO_10012026170557546720624242
+Found transaction: 33
+Transaction status: processing
+Transaction 33 is still processing, querying M-Pesa API
+Found transaction: 33
+Transaction status: processing
+Transaction 33 is still processing, querying M-Pesa API
+Querying M-Pesa API for transaction status: ws_CO_10012026170557546720624242
+Querying M-Pesa API for transaction status: ws_CO_10012026170557546720624242
+M-Pesa status response: {'ResponseCode': '0', 'ResponseDescription': 'The service request has been accepted successfully', 'MerchantRequestID': 'c62c-4d36-9dda-f74b1e210103590', 'CheckoutRequestID': 'ws_CO_10012026170557546720624242', 'ResultCode': '4999', 'ResultDesc': 'The transaction is still under processing'}
+Transaction ws_CO_10012026170557546720624242 marked as failed
+Transaction status updated to: failed
+M-Pesa status response: {'ResponseCode': '0', 'ResponseDescription': 'The service request has been accepted successfully', 'MerchantRequestID': 'c62c-4d36-9dda-f74b1e210103590', 'CheckoutRequestID': 'ws_CO_10012026170557546720624242', 'ResultCode': '4999', 'ResultDesc': 'The transaction is still under processing'}
+Transaction ws_CO_10012026170557546720624242 marked as failed
+=== Check Payment Status Request ===
+Request Data: {'checkout_request_id': 'ws_CO_10012026170557546720624242'}
+User: patrick
+Looking for transaction with checkout_request_id: ws_CO_10012026170557546720624242
+Transaction status updated to: failed
+Found transaction: 33
+Transaction status: failed
+Successfully returning transaction data for ws_CO_10012026170557546720624242
+Successfully returning transaction data for ws_CO_10012026170557546720624242
+Successfully returning transaction data for ws_CO_10012026170557546720624242
+=== Check Payment Status Request ===
+Request Data: {'checkout_request_id': 'ws_CO_10012026170557546720624242'}
+User: patrick
+Looking for transaction with checkout_request_id: ws_CO_10012026170557546720624242
+Found transaction: 33
+Transaction status: failed
+Successfully returning transaction data for ws_CO_10012026170557546720624242
+=== Check Payment Status Request ===
+Request Data: {'checkout_request_id': 'ws_CO_10012026170557546720624242'}
+User: patrick
+Looking for transaction with checkout_request_id: ws_CO_10012026170557546720624242
+Found transaction: 33
+Transaction status: failed
+Successfully returning transaction data for ws_CO_10012026170557546720624242
