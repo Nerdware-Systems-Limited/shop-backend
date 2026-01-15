@@ -134,6 +134,7 @@ class ProductDetailSerializer(serializers.ModelSerializer):
     reviews = ReviewSerializer(many=True, read_only=True)
     average_rating = serializers.SerializerMethodField()
     review_count = serializers.SerializerMethodField()
+    is_in_stock = serializers.BooleanField(read_only=True)
 
     class Meta:
         model = Product
