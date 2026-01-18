@@ -1,0 +1,487 @@
+<!-- payments/templates/payments/refund_notification.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Refund Processed - {{ site_name }}</title>
+    <style>
+        /* Modern CSS Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 600px;
+            margin: 40px auto;
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+            color: white;
+            padding: 60px 30px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .header::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px);
+            background-size: 30px 30px;
+            opacity: 0.3;
+            animation: float 20s linear infinite;
+        }
+        
+        @keyframes float {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .refund-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+            position: relative;
+            z-index: 1;
+            animation: bounce 2s infinite;
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .header h1 {
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 1;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .header .amount {
+            font-size: 42px;
+            font-weight: 800;
+            margin: 15px 0;
+            position: relative;
+            z-index: 1;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+        
+        .content {
+            padding: 50px 40px;
+            background: white;
+            position: relative;
+        }
+        
+        .greeting {
+            font-size: 18px;
+            margin-bottom: 30px;
+            color: #424242;
+        }
+        
+        .confirmation-card {
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            border-radius: 12px;
+            padding: 30px;
+            margin: 30px 0;
+            border: 2px dashed #2196F3;
+            position: relative;
+        }
+        
+        .confirmation-card::before {
+            content: '✓';
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #4CAF50;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        
+        .refund-details {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 30px;
+            margin: 30px 0;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .detail-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .detail-item {
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            border-left: 4px solid #2196F3;
+        }
+        
+        .detail-label {
+            font-size: 13px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 5px;
+        }
+        
+        .detail-value {
+            font-size: 18px;
+            font-weight: 600;
+            color: #2196F3;
+        }
+        
+        .refund-amount {
+            text-align: center;
+            margin: 30px 0;
+            padding: 30px;
+            background: linear-gradient(135deg, #fff8e1 0%, #ffecb3 100%);
+            border-radius: 12px;
+            border: 2px solid #ffc107;
+        }
+        
+        .refund-amount .label {
+            font-size: 16px;
+            color: #ff9800;
+            margin-bottom: 10px;
+        }
+        
+        .refund-amount .value {
+            font-size: 48px;
+            font-weight: 800;
+            color: #ff5722;
+        }
+        
+        .timeline {
+            margin: 40px 0;
+            position: relative;
+        }
+        
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 30px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #2196F3;
+        }
+        
+        .timeline-item {
+            display: flex;
+            margin-bottom: 30px;
+            position: relative;
+        }
+        
+        .timeline-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: white;
+            border: 3px solid #2196F3;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: #2196F3;
+            z-index: 1;
+            margin-right: 20px;
+            flex-shrink: 0;
+        }
+        
+        .timeline-content {
+            flex: 1;
+            padding: 15px;
+            background: #f5f5f5;
+            border-radius: 8px;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 8px 20px;
+            border-radius: 25px;
+            font-size: 14px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .status-completed {
+            background: linear-gradient(135deg, #4CAF50 0%, #388E3C 100%);
+            color: white;
+        }
+        
+        .status-processing {
+            background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+            color: white;
+        }
+        
+        .status-pending {
+            background: linear-gradient(135deg, #FF9800 0%, #F57C00 100%);
+            color: white;
+        }
+        
+        .important-notes {
+            background: #fff3e0;
+            border-radius: 12px;
+            padding: 25px;
+            margin: 30px 0;
+            border-left: 5px solid #ff9800;
+        }
+        
+        .important-notes h4 {
+            color: #e65100;
+            margin-bottom: 15px;
+        }
+        
+        .contact-support {
+            text-align: center;
+            margin: 40px 0;
+            padding: 30px;
+            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+            border-radius: 12px;
+        }
+        
+        .contact-support a {
+            color: #2196F3;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        
+        .footer {
+            background: #263238;
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+        
+        .footer-logo {
+            font-size: 28px;
+            font-weight: 700;
+            color: #4CAF50;
+            margin-bottom: 20px;
+        }
+        
+        .social-links {
+            margin: 20px 0;
+        }
+        
+        .social-links a {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            background: #37474f;
+            border-radius: 50%;
+            color: white;
+            text-decoration: none;
+            margin: 0 10px;
+            line-height: 40px;
+            transition: all 0.3s ease;
+        }
+        
+        .social-links a:hover {
+            background: #4CAF50;
+            transform: translateY(-3px);
+        }
+        
+        .disclaimer {
+            font-size: 12px;
+            color: #b0bec5;
+            margin-top: 20px;
+            line-height: 1.6;
+        }
+        
+        @media (max-width: 480px) {
+            .content {
+                padding: 30px 20px;
+            }
+            
+            .header {
+                padding: 40px 20px;
+            }
+            
+            .header h1 {
+                font-size: 28px;
+            }
+            
+            .header .amount {
+                font-size: 36px;
+            }
+            
+            .detail-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="refund-icon">💸</div>
+            <h1>Refund Processed</h1>
+            <div class="amount">KSh {{ refund.amount|floatformat:2 }}</div>
+            <p>Your refund has been initiated successfully</p>
+        </div>
+        
+        <div class="content">
+            <div class="greeting">
+                <p>Dear <strong>{{ customer_name }}</strong>,</p>
+                <p>We've processed your refund request. Here are the details:</p>
+            </div>
+            
+            <div class="confirmation-card">
+                <div style="text-align: center; margin-bottom: 15px;">
+                    <span class="status-badge status-{{ refund.status }}">
+                        {{ refund.get_status_display }}
+                    </span>
+                </div>
+                <p style="text-align: center; margin: 0;">
+                    Your refund of <strong>KSh {{ refund.amount|floatformat:2 }}</strong> has been 
+                    {% if refund.status == 'completed' %}completed{% else %}initiated{% endif %}.
+                </p>
+            </div>
+            
+            <div class="refund-details">
+                <h3 style="color: #1976D2; margin-bottom: 20px; text-align: center;">Refund Details</h3>
+                
+                <div class="detail-grid">
+                    <div class="detail-item">
+                        <div class="detail-label">Refund ID</div>
+                        <div class="detail-value">{{ refund.refund_id|slice:":8" }}...</div>
+                    </div>
+                    
+                    <div class="detail-item">
+                        <div class="detail-label">Amount</div>
+                        <div class="detail-value">KSh {{ refund.amount|floatformat:2 }}</div>
+                    </div>
+                    
+                    <div class="detail-item">
+                        <div class="detail-label">Reason</div>
+                        <div class="detail-value">{{ refund.reason|truncatechars:30 }}</div>
+                    </div>
+                    
+                    <div class="detail-item">
+                        <div class="detail-label">Date Initiated</div>
+                        <div class="detail-value">{{ refund.initiated_at|date:"M j, Y" }}</div>
+                    </div>
+                    
+                    {% if refund.reversal_id %}
+                    <div class="detail-item">
+                        <div class="detail-label">Reversal ID</div>
+                        <div class="detail-value">{{ refund.reversal_id }}</div>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="detail-item">
+                        <div class="detail-label">Original Receipt</div>
+                        <div class="detail-value">{{ transaction.mpesa_receipt_number }}</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="timeline">
+                <h3 style="color: #1976D2; margin-bottom: 25px; text-align: center;">Refund Timeline</h3>
+                
+                <div class="timeline-item">
+                    <div class="timeline-icon">1</div>
+                    <div class="timeline-content">
+                        <strong>Refund Requested</strong>
+                        <p>{{ refund.initiated_at|date:"F j, Y" }} at {{ refund.initiated_at|date:"g:i a" }}</p>
+                        <p>Your refund request was received and is being processed.</p>
+                    </div>
+                </div>
+                
+                <div class="timeline-item">
+                    <div class="timeline-icon">2</div>
+                    <div class="timeline-content">
+                        <strong>Processing</strong>
+                        <p>Currently in progress</p>
+                        <p>We're processing your refund with M-Pesa. This typically takes 1-2 business days.</p>
+                    </div>
+                </div>
+                
+                <div class="timeline-item">
+                    <div class="timeline-icon">3</div>
+                    <div class="timeline-content">
+                        <strong>Funds Returned</strong>
+                        <p>Expected: {{ expected_completion_date|default:"1-2 business days" }}</p>
+                        <p>The funds will be returned to your M-Pesa account automatically.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="important-notes">
+                <h4>📋 Important Information</h4>
+                <ul style="padding-left: 20px; margin-top: 10px;">
+                    <li>Refunds typically appear in your M-Pesa account within <strong>24-48 hours</strong></li>
+                    <li>You'll receive an SMS confirmation from M-Pesa when the refund is complete</li>
+                    <li>The refund amount includes the full transaction amount (no fees deducted)</li>
+                    <li>If you don't see the refund after 3 business days, please contact support</li>
+                </ul>
+            </div>
+            
+            <div class="contact-support">
+                <h4 style="color: #388E3C; margin-bottom: 15px;">Questions About Your Refund?</h4>
+                <p>Our support team is here to help if you have any questions about this refund.</p>
+                <p>📧 Email: <a href="mailto:{{ support_email }}">{{ support_email }}</a></p>
+                <p>📞 Phone: +254 700 000 000 (Mon-Fri 8AM-6PM)</p>
+            </div>
+            
+            <p style="margin-top: 30px; font-size: 14px; color: #666; text-align: center; line-height: 1.6;">
+                <em>This is an automated notification. Please do not reply to this email directly.<br>
+                If you need assistance, please use the contact information above.</em>
+            </p>
+        </div>
+        
+        <div class="footer">
+            <div class="footer-logo">{{ site_name }}</div>
+            <p>High-quality audio equipment and accessories</p>
+            
+            <div class="social-links">
+                <a href="{{ site_url }}/facebook">f</a>
+                <a href="{{ site_url }}/twitter">𝕏</a>
+                <a href="{{ site_url }}/instagram">📷</a>
+                <a href="{{ site_url }}/youtube">▶️</a>
+            </div>
+            
+            <div class="disclaimer">
+                <p>This email was sent to you because you requested or received a refund from {{ site_name }}.</p>
+                <p>© {{ current_year }} {{ site_name }}. All rights reserved.<br>
+                Nairobi, Kenya | <a href="{{ site_url }}/privacy" style="color: #4CAF50;">Privacy Policy</a> | <a href="{{ site_url }}/terms" style="color: #4CAF50;">Terms of Service</a></p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

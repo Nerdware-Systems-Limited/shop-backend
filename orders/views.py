@@ -26,7 +26,16 @@ from .serializers import (
 )
 from .filters import OrderFilter, OrderReturnFilter
 from .permissions import IsOrderOwnerOrAdmin, CanModifyOrder, CanCreateReturn
-from .tasks import send_order_confirmation_email, update_order_status_task
+from .tasks import (
+    send_order_confirmation_email,
+    send_shipping_notification_email,
+    send_delivery_notification_email,
+    send_cancellation_notification_email,
+    send_payment_failed_notification,
+    send_processing_notification,
+    update_order_status_task,
+    award_order_loyalty_points,
+)
 from .notifications import send_order_confirmation
 from payments.services import MpesaPaymentService
 
@@ -128,11 +137,8 @@ class OrderViewSet(viewsets.ModelViewSet):
                     import traceback
                     traceback.print_exc()
             
-            # Send confirmation email (async)
-            try:
-                send_order_confirmation(order)
-            except:
-                print("Warning: Could not send confirmation email")
+            # Send confirmation email (async) using Celery
+            send_order_confirmation_email.delay(order.id)
             
             return Response(
                 OrderDetailSerializer(order, context=self.get_serializer_context()).data,
@@ -184,6 +190,12 @@ class OrderViewSet(viewsets.ModelViewSet):
                 changed_by=request.user,
                 notes=data.get('reason', 'Order cancelled by customer'),
                 ip_address=request.META.get('REMOTE_ADDR')
+            )
+
+            # Send cancellation email
+            send_cancellation_notification_email.delay(
+                order.id,
+                data.get('reason', 'Order cancelled by customer')
             )
             
             return Response({
@@ -244,6 +256,10 @@ class OrderViewSet(viewsets.ModelViewSet):
         
         # Trigger async tasks based on status
         update_order_status_task.delay(order.id, old_status, new_status)
+
+        # Award loyalty points if order is delivered
+        if new_status == 'delivered':
+            award_order_loyalty_points.delay(order.id)
         
         return Response({
             'message': f'Order status updated from {old_status} to {new_status}',
@@ -286,7 +302,10 @@ class OrderViewSet(viewsets.ModelViewSet):
             notes=f'Tracking added: {carrier} - {tracking_number}',
             ip_address=request.META.get('REMOTE_ADDR')
         )
-        
+
+        # Send shipping notification
+        send_shipping_notification_email.delay(order.id)
+
         return Response({
             'message': 'Tracking information added successfully',
             'order': OrderDetailSerializer(order).data
@@ -338,6 +357,79 @@ class OrderViewSet(viewsets.ModelViewSet):
             ]
         
         return Response(tracking_info)
+    
+    @action(detail=True, methods=['post'])
+    def mark_as_delivered(self, request, pk=None):
+        """Mark order as delivered (admin only)"""
+        if not request.user.is_staff:
+            return Response(
+                {'error': 'Only admins can mark orders as delivered'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        order = self.get_object()
+        
+        if order.status == 'delivered':
+            return Response(
+                {'error': 'Order is already delivered'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        old_status = order.status
+        order.status = 'delivered'
+        order.delivered_date = timezone.now()
+        order.save()
+        
+        # Create status history
+        OrderStatusHistory.objects.create(
+            order=order,
+            old_status=old_status,
+            new_status='delivered',
+            changed_by=request.user,
+            notes='Manually marked as delivered',
+            ip_address=request.META.get('REMOTE_ADDR')
+        )
+        
+        # Send delivery notification and award points
+        send_delivery_notification_email.delay(order.id)
+        award_order_loyalty_points.delay(order.id)
+        
+        return Response({
+            'message': 'Order marked as delivered. Customer notified and loyalty points awarded.',
+            'order': OrderDetailSerializer(order).data
+        })
+    @action(detail=True, methods=['post'])
+    def mark_as_processing(self, request, pk=None):
+        """Mark order as processing (admin only)"""
+        if not request.user.is_staff:
+            return Response(
+                {'error': 'Only admins can mark orders as processing'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        order = self.get_object()
+        
+        old_status = order.status
+        order.status = 'processing'
+        order.save()
+        
+        # Create status history
+        OrderStatusHistory.objects.create(
+            order=order,
+            old_status=old_status,
+            new_status='processing',
+            changed_by=request.user,
+            notes='Order moved to processing',
+            ip_address=request.META.get('REMOTE_ADDR')
+        )
+        
+        # Send processing notification
+        send_processing_notification.delay(order.id)
+        
+        return Response({
+            'message': 'Order marked as processing. Customer notified.',
+            'order': OrderDetailSerializer(order).data
+        })
     
     @action(detail=False, methods=['get'])
     def my_orders(self, request):

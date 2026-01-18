@@ -91,6 +91,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'customers.context_processors.email_context',
             ],
         },
     },
@@ -259,13 +260,39 @@ MPESA_CONFIG = {
     'TIMEOUT_URL': config('MPESA_TIMEOUT_URL', default=''),
 }
 
-# Celery Configuration for async processing
-CELERY_BEAT_SCHEDULE = {
-    'check-pending-mpesa-transactions': {
-        'task': 'payments.tasks.check_pending_transactions',
-        'schedule': crontab(minute='*/5'),  # Every 5 minutes
-    },
+# Celery Broker and Result Configuration
+CELERY_BROKER_URL = config('CELERY_BROKER_URL', default='redis://127.0.0.1:6379/0')
+CELERY_RESULT_BACKEND = config('CELERY_RESULT_BACKEND', default='redis://127.0.0.1:6379/3')
+
+# Celery Task Settings
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'UTC'
+CELERY_ENABLE_UTC = True
+
+# Task execution settings
+CELERY_TASK_TRACK_STARTED = True
+CELERY_TASK_TIME_LIMIT = 30 * 60  # 30 minutes
+CELERY_TASK_SOFT_TIME_LIMIT = 25 * 60  # 25 minutes
+
+# Worker settings
+CELERY_WORKER_PREFETCH_MULTIPLIER = 4
+CELERY_WORKER_MAX_TASKS_PER_CHILD = 1000
+
+# Result expiration
+CELERY_RESULT_EXPIRES = 3600  # 1 hour
+
+
+# Task routing - route tasks to specific queues
+CELERY_TASK_ROUTES = {
+    'customers.tasks.*': {'queue': 'customers'},
+    'orders.tasks.*': {'queue': 'orders'},
+    'payments.tasks.*': {'queue': 'payments'},
+    'inventory.tasks.*': {'queue': 'inventory'},
+    'products.tasks.*': {'queue': 'products'},
 }
+
 
 # Loggingem
 LOGGING = {

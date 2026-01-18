@@ -1,0 +1,338 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block title %}Analytics Dashboard - {{ site_title }}{% endblock %}
+
+{% block extrastyle %}
+<style>
+    .dashboard-container {
+        padding: 20px;
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+    
+    .metrics-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+    
+    .metric-card {
+        background: white;
+        padding: 25px;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    
+    .metric-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    
+    .metric-value {
+        font-size: 36px;
+        font-weight: bold;
+        margin: 10px 0;
+    }
+    
+    .metric-label {
+        color: #666;
+        font-size: 14px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .metric-change {
+        font-size: 12px;
+        margin-top: 8px;
+    }
+    
+    .metric-change.positive {
+        color: #4caf50;
+    }
+    
+    .metric-change.negative {
+        color: #f44336;
+    }
+    
+    .alert-section {
+        background: #fff3cd;
+        border-left: 4px solid #ffc107;
+        padding: 15px 20px;
+        margin-bottom: 20px;
+        border-radius: 4px;
+    }
+    
+    .alert-critical {
+        background: #f8d7da;
+        border-left-color: #dc3545;
+    }
+    
+    .alert-success {
+        background: #d4edda;
+        border-left-color: #28a745;
+    }
+    
+    .chart-container {
+        background: white;
+        padding: 25px;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+    }
+    
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    
+    .data-table th {
+        background: #f5f5f5;
+        padding: 12px;
+        text-align: left;
+        font-weight: 600;
+        border-bottom: 2px solid #ddd;
+    }
+    
+    .data-table td {
+        padding: 12px;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .data-table tr:hover {
+        background: #f9f9f9;
+    }
+    
+    .badge {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+    
+    .badge-gold {
+        background: #ffd700;
+        color: #333;
+    }
+    
+    .badge-silver {
+        background: #c0c0c0;
+        color: #333;
+    }
+    
+    .badge-bronze {
+        background: #cd7f32;
+        color: white;
+    }
+    
+    .progress-bar {
+        height: 8px;
+        background: #e0e0e0;
+        border-radius: 4px;
+        overflow: hidden;
+        margin-top: 8px;
+    }
+    
+    .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #4caf50, #8bc34a);
+        transition: width 0.3s;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <h1 style="margin-bottom: 10px;">📊 Customer Analytics Dashboard</h1>
+    <p style="color: #666; margin-bottom: 30px;">Real-time insights and decision-making analytics</p>
+    
+    <!-- Critical Alerts -->
+    {% if at_risk > 0 %}
+    <div class="alert-section alert-critical">
+        <strong>🚨 CRITICAL ALERT:</strong> {{ at_risk }} customers are at risk of churning. 
+        <a href="{% url 'admin:customers_customer_changelist' %}?user__last_login__lt=60">View At-Risk Customers →</a>
+    </div>
+    {% endif %}
+    
+    {% if dormant > 0 %}
+    <div class="alert-section">
+        <strong>⚠️ WARNING:</strong> {{ dormant }} customers are dormant (90+ days inactive). 
+        <a href="{% url 'admin:customers_customer_changelist' %}?user__last_login__lt=90">Re-engage Now →</a>
+    </div>
+    {% endif %}
+    
+    <!-- Key Metrics -->
+    <div class="metrics-grid">
+        <div class="metric-card">
+            <div class="metric-label">👥 Total Customers</div>
+            <div class="metric-value" style="color: #2196f3;">{{ total_customers|default:0 }}</div>
+            <div class="metric-change positive">
+                ↑ {{ new_this_month }} this month
+            </div>
+        </div>
+        
+        <div class="metric-card">
+            <div class="metric-label">✅ Active Users</div>
+            <div class="metric-value" style="color: #4caf50;">{{ active_users|default:0 }}</div>
+            <div class="metric-change">
+                {{ engagement_rate }}% engagement rate
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: {{ engagement_rate }}%;"></div>
+            </div>
+        </div>
+        
+        <div class="metric-card">
+            <div class="metric-label">🎁 Total Loyalty Points</div>
+            <div class="metric-value" style="color: #ff9800;">{{ loyalty_stats.total_points|default:0|floatformat:0 }}</div>
+            <div class="metric-change">
+                Avg: {{ loyalty_stats.avg_points|default:0|floatformat:0 }} per customer
+            </div>
+        </div>
+        
+        <div class="metric-card">
+            <div class="metric-label">🔥 Highly Engaged</div>
+            <div class="metric-value" style="color: #e91e63;">{{ highly_engaged|default:0 }}</div>
+            <div class="metric-change positive">
+                Active in last 7 days
+            </div>
+        </div>
+        
+        <div class="metric-card">
+            <div class="metric-label">🆕 New This Week</div>
+            <div class="metric-value" style="color: #9c27b0;">{{ new_this_week|default:0 }}</div>
+            <div class="metric-change">
+                {{ new_this_month }} this month
+            </div>
+        </div>
+        
+        <div class="metric-card">
+            <div class="metric-label">🚨 At Risk</div>
+            <div class="metric-value" style="color: #f44336;">{{ at_risk|default:0 }}</div>
+            <div class="metric-change negative">
+                Requires immediate attention
+            </div>
+        </div>
+    </div>
+    
+    <!-- Top Customers -->
+    <div class="chart-container">
+        <h2 style="margin-top: 0;">🏆 Top 10 Customers by Loyalty Points</h2>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Rank</th>
+                    <th>Customer</th>
+                    <th>Email</th>
+                    <th>Tier</th>
+                    <th>Points</th>
+                    <th>Engagement</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for customer in top_customers %}
+                <tr>
+                    <td><strong>#{{ forloop.counter }}</strong></td>
+                    <td>{{ customer.user.get_full_name|default:customer.user.username }}</td>
+                    <td>{{ customer.user.email }}</td>
+                    <td>
+                        {% if customer.loyalty_points >= 5000 %}
+                            <span class="badge" style="background: #b9f2ff;">💎 Diamond</span>
+                        {% elif customer.loyalty_points >= 2000 %}
+                            <span class="badge" style="background: #e5e4e2;">👑 Platinum</span>
+                        {% elif customer.loyalty_points >= 1000 %}
+                            <span class="badge badge-gold">🏆 Gold</span>
+                        {% elif customer.loyalty_points >= 500 %}
+                            <span class="badge badge-silver">🥈 Silver</span>
+                        {% else %}
+                            <span class="badge badge-bronze">🥉 Bronze</span>
+                        {% endif %}
+                    </td>
+                    <td><strong>{{ customer.loyalty_points }}</strong></td>
+                    <td>
+                        {% if customer.user.last_login %}
+                            {% with days=(now|timesince:customer.user.last_login) %}
+                                {% if 'day' in days %}
+                                    {{ days }}
+                                {% else %}
+                                    <span style="color: #4caf50;">✅ Active</span>
+                                {% endif %}
+                            {% endwith %}
+                        {% else %}
+                            <span style="color: #999;">Never</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{% url 'admin:customers_customer_change' customer.id %}" class="button" style="font-size: 11px;">View</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" style="text-align: center; color: #999;">No customers yet</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    <!-- Recent Customers -->
+    <div class="chart-container">
+        <h2 style="margin-top: 0;">🆕 Recent Registrations</h2>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Customer</th>
+                    <th>Email</th>
+                    <th>Joined</th>
+                    <th>Points</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for customer in recent_customers %}
+                <tr>
+                    <td>{{ customer.user.get_full_name|default:customer.user.username }}</td>
+                    <td>{{ customer.user.email }}</td>
+                    <td>{{ customer.created_at|date:"Y-m-d H:i" }}</td>
+                    <td>{{ customer.loyalty_points }}</td>
+                    <td>
+                        {% if customer.user.last_login %}
+                            <span style="color: #4caf50;">✅ Active</span>
+                        {% else %}
+                            <span style="color: #ff9800;">⚠️ Not Logged In</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" style="text-align: center; color: #999;">No recent registrations</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    <!-- Quick Actions -->
+    <div class="chart-container">
+        <h2 style="margin-top: 0;">⚡ Quick Actions</h2>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+            <a href="{% url 'admin:customers_customer_changelist' %}" class="button" style="padding: 15px; text-align: center; display: block;">
+                👥 View All Customers
+            </a>
+            <a href="{% url 'admin:customers_customer_changelist' %}?user__last_login__lt=60" class="button" style="padding: 15px; text-align: center; display: block; background: #ff9800; color: white;">
+                🚨 At-Risk Customers
+            </a>
+            <a href="{% url 'admin:customers_customer_add' %}" class="button" style="padding: 15px; text-align: center; display: block; background: #4caf50; color: white;">
+                ➕ Add New Customer
+            </a>
+            <a href="{% url 'admin:customers_customer_changelist' %}?o=-loyalty_points" class="button" style="padding: 15px; text-align: center; display: block; background: #2196f3; color: white;">
+                🏆 VIP Customers
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

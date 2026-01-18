@@ -5133,3 +5133,588 @@ Looking for transaction with checkout_request_id: ws_CO_100120261705575467206242
 Found transaction: 33
 Transaction status: failed
 Successfully returning transaction data for ws_CO_10012026170557546720624242
+Failed to check pending transactions: No active M-Pesa configuration found
+Traceback (most recent call last):
+  File "C:\Users\Tric\Desktop\Kiarie\backend\payments\tasks.py", line 335, in check_pending_transactions
+    service = MpesaPaymentService()
+  File "C:\Users\Tric\Desktop\Kiarie\backend\payments\services.py", line 431, in __init__
+    self.api_client = MpesaAPIClient()
+  File "C:\Users\Tric\Desktop\Kiarie\backend\payments\services.py", line 30, in __init__
+    raise ValueError("No active M-Pesa configuration found")
+ValueError: No active M-Pesa configuration found
+Failed to check pending transactions: No active M-Pesa configuration found
+Traceback (most recent call last):
+  File "C:\Users\Tric\Desktop\Kiarie\backend\payments\tasks.py", line 335, in check_pending_transactions
+    service = MpesaPaymentService()
+  File "C:\Users\Tric\Desktop\Kiarie\backend\payments\services.py", line 431, in __init__
+    self.api_client = MpesaAPIClient()
+  File "C:\Users\Tric\Desktop\Kiarie\backend\payments\services.py", line 30, in __init__
+    raise ValueError("No active M-Pesa configuration found")
+ValueError: No active M-Pesa configuration found
+Failed to check pending transactions: No active M-Pesa configuration found
+Traceback (most recent call last):
+  File "C:\Users\Tric\Desktop\Kiarie\backend\payments\tasks.py", line 335, in check_pending_transactions
+    service = MpesaPaymentService()
+  File "C:\Users\Tric\Desktop\Kiarie\backend\payments\services.py", line 431, in __init__
+    self.api_client = MpesaAPIClient()
+  File "C:\Users\Tric\Desktop\Kiarie\backend\payments\services.py", line 30, in __init__
+    raise ValueError("No active M-Pesa configuration found")
+ValueError: No active M-Pesa configuration found
+Failed to check pending transactions: No active M-Pesa configuration found
+Traceback (most recent call last):
+  File "C:\Users\Tric\Desktop\Kiarie\backend\payments\tasks.py", line 335, in check_pending_transactions
+    service = MpesaPaymentService()
+  File "C:\Users\Tric\Desktop\Kiarie\backend\payments\services.py", line 431, in __init__
+    self.api_client = MpesaAPIClient()
+  File "C:\Users\Tric\Desktop\Kiarie\backend\payments\services.py", line 30, in __init__
+    raise ValueError("No active M-Pesa configuration found")
+ValueError: No active M-Pesa configuration found
+Failed to check pending transactions: No active M-Pesa configuration found
+Traceback (most recent call last):
+  File "C:\Users\Tric\Desktop\Kiarie\backend\payments\tasks.py", line 335, in check_pending_transactions
+    service = MpesaPaymentService()
+  File "C:\Users\Tric\Desktop\Kiarie\backend\payments\services.py", line 431, in __init__
+    self.api_client = MpesaAPIClient()
+  File "C:\Users\Tric\Desktop\Kiarie\backend\payments\services.py", line 30, in __init__
+    raise ValueError("No active M-Pesa configuration found")
+ValueError: No active M-Pesa configuration found
+Failed to check pending transactions: No active M-Pesa configuration found
+Traceback (most recent call last):
+  File "C:\Users\Tric\Desktop\Kiarie\backend\payments\tasks.py", line 335, in check_pending_transactions
+    service = MpesaPaymentService()
+  File "C:\Users\Tric\Desktop\Kiarie\backend\payments\services.py", line 431, in __init__
+    self.api_client = MpesaAPIClient()
+  File "C:\Users\Tric\Desktop\Kiarie\backend\payments\services.py", line 30, in __init__
+    raise ValueError("No active M-Pesa configuration found")
+ValueError: No active M-Pesa configuration found
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+New M-Pesa access token fetched for Sandbox Config
+STK Push initiated successfully: ws_CO_18012026131458398720624242
+=== Check Payment Status Request ===
+Request Data: {'checkout_request_id': 'ws_CO_18012026131458398720624242'}
+User: tricrck@gmail.com
+Looking for transaction with checkout_request_id: ws_CO_18012026131458398720624242
+Found transaction: 1
+=== Check Payment Status Request ===
+Transaction status: processing
+Request Data: {'checkout_request_id': 'ws_CO_18012026131458398720624242'}
+Transaction 1 is still processing, querying M-Pesa API
+User: tricrck@gmail.com
+Looking for transaction with checkout_request_id: ws_CO_18012026131458398720624242
+Querying M-Pesa API for transaction status: ws_CO_18012026131458398720624242
+Found transaction: 1
+Transaction status: processing
+Transaction 1 is still processing, querying M-Pesa API
+Querying M-Pesa API for transaction status: ws_CO_18012026131458398720624242
+STK status query failed: 429 Client Error: Too Many Requests for url: https://sandbox.safaricom.co.ke/mpesa/stkpushquery/v1/query
+Error querying M-Pesa status: 429 Client Error: Too Many Requests for url: https://sandbox.safaricom.co.ke/mpesa/stkpushquery/v1/query
+Traceback (most recent call last):
+  File "C:\Users\Tric\Desktop\Kiarie\backend\payments\services.py", line 473, in check_payment_status
+    status_response = self.api_client.query_stk_status(checkout_request_id)
+  File "C:\Users\Tric\Desktop\Kiarie\backend\payments\services.py", line 216, in query_stk_status
+    response.raise_for_status()
+  File "C:\Users\Tric\Desktop\Kiarie\backend\venv\lib\site-packages\requests\models.py", line 1026, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 429 Client Error: Too Many Requests for url: https://sandbox.safaricom.co.ke/mpesa/stkpushquery/v1/query
+Transaction status updated to: processing
+Successfully returning transaction data for ws_CO_18012026131458398720624242
+=== Check Payment Status Request ===
+Request Data: {'checkout_request_id': 'ws_CO_18012026131458398720624242'}
+User: tricrck@gmail.com
+Looking for transaction with checkout_request_id: ws_CO_18012026131458398720624242
+Found transaction: 1
+Transaction status: processing
+Transaction 1 is still processing, querying M-Pesa API
+Querying M-Pesa API for transaction status: ws_CO_18012026131458398720624242
+M-Pesa status response: {'ResponseCode': '0', 'ResponseDescription': 'The service request has been accepted successfully', 'MerchantRequestID': '0f89-4fbd-be11-4a5396ecac6013305', 'CheckoutRequestID': 'ws_CO_18012026131458398720624242', 'ResultCode': '4999', 'ResultDesc': 'The transaction is still under processing'}
+Transaction ws_CO_18012026131458398720624242 marked as failed
+Transaction status updated to: failed
+Successfully returning transaction data for ws_CO_18012026131458398720624242
+M-Pesa status response: {'ResponseCode': '0', 'ResponseDescription': 'The service request has been accepted successfully', 'MerchantRequestID': '0f89-4fbd-be11-4a5396ecac6013305', 'CheckoutRequestID': 'ws_CO_18012026131458398720624242', 'ResultCode': '4999', 'ResultDesc': 'The transaction is still under processing'}
+Transaction ws_CO_18012026131458398720624242 marked as failed
+Transaction status updated to: failed
+Successfully returning transaction data for ws_CO_18012026131458398720624242
+Checked 0 pending transactions, updated 0
+=== Check Payment Status Request ===
+=== Check Payment Status Request ===
+Request Data: {'checkout_request_id': 'ws_CO_18012026131458398720624242'}
+Request Data: {'checkout_request_id': 'ws_CO_18012026131458398720624242'}
+=== Check Payment Status Request ===
+User: tricrck@gmail.com
+User: tricrck@gmail.com
+Request Data: {'checkout_request_id': 'ws_CO_18012026131458398720624242'}
+Looking for transaction with checkout_request_id: ws_CO_18012026131458398720624242
+Looking for transaction with checkout_request_id: ws_CO_18012026131458398720624242
+User: tricrck@gmail.com
+Looking for transaction with checkout_request_id: ws_CO_18012026131458398720624242
+Found transaction: 1
+Transaction status: failed
+Found transaction: 1
+Transaction status: failed
+Successfully returning transaction data for ws_CO_18012026131458398720624242
+Successfully returning transaction data for ws_CO_18012026131458398720624242
+Found transaction: 1
+Transaction status: failed
+Successfully returning transaction data for ws_CO_18012026131458398720624242
+=== Check Payment Status Request ===
+=== Check Payment Status Request ===
+Request Data: {'checkout_request_id': 'ws_CO_18012026131458398720624242'}
+Request Data: {'checkout_request_id': 'ws_CO_18012026131458398720624242'}
+User: tricrck@gmail.com
+User: tricrck@gmail.com
+Looking for transaction with checkout_request_id: ws_CO_18012026131458398720624242
+Looking for transaction with checkout_request_id: ws_CO_18012026131458398720624242
+Found transaction: 1
+Transaction status: failed
+Found transaction: 1
+Successfully returning transaction data for ws_CO_18012026131458398720624242
+Transaction status: failed
+Successfully returning transaction data for ws_CO_18012026131458398720624242
+=== Check Payment Status Request ===
+Request Data: {'checkout_request_id': 'ws_CO_18012026131458398720624242'}
+User: tricrck@gmail.com
+Looking for transaction with checkout_request_id: ws_CO_18012026131458398720624242
+Found transaction: 1
+Transaction status: failed
+Successfully returning transaction data for ws_CO_18012026131458398720624242
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+High failure rate detected: 100.0%
+Payment monitoring: 1 transactions, 1 failed (100.0%)
+Checked 0 pending transactions, updated 0
+Admin alert sent: High Payment Failure Rate
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Token refreshed for Sandbox Config
+Refreshed 1 M-Pesa access tokens
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Timed out 0 stuck transactions
+Checked 0 pending transactions, updated 0
+Token refreshed for Sandbox Config
+Refreshed 1 M-Pesa access tokens
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+New M-Pesa access token fetched for Sandbox Config
+Token refreshed for Sandbox Config
+Refreshed 1 M-Pesa access tokens
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Token refreshed for Sandbox Config
+Refreshed 1 M-Pesa access tokens
+Timed out 0 stuck transactions
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+STK Push initiated successfully: ws_CO_18012026154710234720624242
+=== Check Payment Status Request ===
+Request Data: {'checkout_request_id': 'ws_CO_18012026154710234720624242'}
+User: tricrck@gmail.com
+Looking for transaction with checkout_request_id: ws_CO_18012026154710234720624242
+Found transaction: 2
+Transaction status: processing
+Transaction 2 is still processing, querying M-Pesa API
+Querying M-Pesa API for transaction status: ws_CO_18012026154710234720624242
+=== Check Payment Status Request ===
+Request Data: {'checkout_request_id': 'ws_CO_18012026154710234720624242'}
+User: tricrck@gmail.com
+Looking for transaction with checkout_request_id: ws_CO_18012026154710234720624242
+Found transaction: 2
+Transaction status: processing
+Transaction 2 is still processing, querying M-Pesa API
+Querying M-Pesa API for transaction status: ws_CO_18012026154710234720624242
+M-Pesa status response: {'ResponseCode': '0', 'ResponseDescription': 'The service request has been accepted successfully', 'MerchantRequestID': '3ae6-4b6f-8aea-7241ea6de310448', 'CheckoutRequestID': 'ws_CO_18012026154710234720624242', 'ResultCode': '4999', 'ResultDesc': 'The transaction is still under processing'}
+Transaction ws_CO_18012026154710234720624242 marked as failed
+Transaction status updated to: failed
+Successfully returning transaction data for ws_CO_18012026154710234720624242
+M-Pesa status response: {'ResponseCode': '0', 'ResponseDescription': 'The service request has been accepted successfully', 'MerchantRequestID': '3ae6-4b6f-8aea-7241ea6de310448', 'CheckoutRequestID': 'ws_CO_18012026154710234720624242', 'ResultCode': '4999', 'ResultDesc': 'The transaction is still under processing'}
+=== Check Payment Status Request ===
+Request Data: {'checkout_request_id': 'ws_CO_18012026154710234720624242'}
+User: tricrck@gmail.com
+Looking for transaction with checkout_request_id: ws_CO_18012026154710234720624242
+Found transaction: 2
+Transaction status: failed
+Successfully returning transaction data for ws_CO_18012026154710234720624242
+Transaction ws_CO_18012026154710234720624242 marked as failed
+Transaction status updated to: failed
+Successfully returning transaction data for ws_CO_18012026154710234720624242
+Checked 0 pending transactions, updated 0
+Token refreshed for Sandbox Config
+Refreshed 1 M-Pesa access tokens
+Checked 0 pending transactions, updated 0
+Timed out 0 stuck transactions
+Checked 0 pending transactions, updated 0
+New M-Pesa access token fetched for Sandbox Config
+Token refreshed for Sandbox Config
+Refreshed 1 M-Pesa access tokens
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+STK Push initiated successfully: ws_CO_18012026161305295720624242
+=== Check Payment Status Request ===
+Request Data: {'checkout_request_id': 'ws_CO_18012026161305295720624242'}
+User: tricrck@gmail.com
+Looking for transaction with checkout_request_id: ws_CO_18012026161305295720624242
+=== Check Payment Status Request ===
+Request Data: {'checkout_request_id': 'ws_CO_18012026161305295720624242'}
+User: tricrck@gmail.com
+Looking for transaction with checkout_request_id: ws_CO_18012026161305295720624242
+Found transaction: 3
+Transaction status: processing
+Transaction 3 is still processing, querying M-Pesa API
+Querying M-Pesa API for transaction status: ws_CO_18012026161305295720624242
+Found transaction: 3
+Transaction status: processing
+Transaction 3 is still processing, querying M-Pesa API
+Querying M-Pesa API for transaction status: ws_CO_18012026161305295720624242
+=== Check Payment Status Request ===
+Request Data: {'checkout_request_id': 'ws_CO_18012026161305295720624242'}
+User: tricrck@gmail.com
+Looking for transaction with checkout_request_id: ws_CO_18012026161305295720624242
+Found transaction: 3
+Transaction status: processing
+Transaction 3 is still processing, querying M-Pesa API
+Querying M-Pesa API for transaction status: ws_CO_18012026161305295720624242
+M-Pesa status response: {'ResponseCode': '0', 'ResponseDescription': 'The service request has been accepted successfully', 'MerchantRequestID': '0f89-4fbd-be11-4a5396ecac6014785', 'CheckoutRequestID': 'ws_CO_18012026161305295720624242', 'ResultCode': '1037', 'ResultDesc': 'DS timeout user cannot be reached.'}
+Transaction ws_CO_18012026161305295720624242 marked as timeout
+Transaction status updated to: timeout
+Successfully returning transaction data for ws_CO_18012026161305295720624242
+M-Pesa status response: {'ResponseCode': '0', 'ResponseDescription': 'The service request has been accepted successfully', 'MerchantRequestID': '0f89-4fbd-be11-4a5396ecac6014785', 'CheckoutRequestID': 'ws_CO_18012026161305295720624242', 'ResultCode': '1037', 'ResultDesc': 'DS timeout user cannot be reached.'}
+Transaction ws_CO_18012026161305295720624242 marked as timeout
+Transaction status updated to: timeout
+M-Pesa status response: {'ResponseCode': '0', 'ResponseDescription': 'The service request has been accepted successfully', 'MerchantRequestID': '0f89-4fbd-be11-4a5396ecac6014785', 'CheckoutRequestID': 'ws_CO_18012026161305295720624242', 'ResultCode': '1037', 'ResultDesc': 'DS timeout user cannot be reached.'}
+Transaction ws_CO_18012026161305295720624242 marked as timeout
+Transaction status updated to: timeout
+Successfully returning transaction data for ws_CO_18012026161305295720624242
+Successfully returning transaction data for ws_CO_18012026161305295720624242
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+High failure rate detected: 100.0%
+Payment monitoring: 2 transactions, 2 failed (100.0%)
+Checked 0 pending transactions, updated 0
+Admin alert sent: High Payment Failure Rate
+STK Push initiated successfully: ws_CO_18012026163128515720624242
+=== Check Payment Status Request ===
+=== Check Payment Status Request ===
+=== Check Payment Status Request ===
+Request Data: {'checkout_request_id': 'ws_CO_18012026163128515720624242'}
+Request Data: {'checkout_request_id': 'ws_CO_18012026163128515720624242'}
+Request Data: {'checkout_request_id': 'ws_CO_18012026163128515720624242'}
+User: tricrck@gmail.com
+User: tricrck@gmail.com
+User: tricrck@gmail.com
+Looking for transaction with checkout_request_id: ws_CO_18012026163128515720624242
+Looking for transaction with checkout_request_id: ws_CO_18012026163128515720624242
+Looking for transaction with checkout_request_id: ws_CO_18012026163128515720624242
+Found transaction: 4
+Transaction status: processing
+Transaction 4 is still processing, querying M-Pesa API
+Querying M-Pesa API for transaction status: ws_CO_18012026163128515720624242
+Found transaction: 4
+Transaction status: processing
+Transaction 4 is still processing, querying M-Pesa API
+Querying M-Pesa API for transaction status: ws_CO_18012026163128515720624242
+Found transaction: 4
+Transaction status: processing
+Transaction 4 is still processing, querying M-Pesa API
+Querying M-Pesa API for transaction status: ws_CO_18012026163128515720624242
+STK status query failed: 429 Client Error: Too Many Requests for url: https://sandbox.safaricom.co.ke/mpesa/stkpushquery/v1/query
+Error querying M-Pesa status: 429 Client Error: Too Many Requests for url: https://sandbox.safaricom.co.ke/mpesa/stkpushquery/v1/query
+Traceback (most recent call last):
+  File "C:\Users\Tric\Desktop\Kiarie\backend\payments\services.py", line 473, in check_payment_status
+    status_response = self.api_client.query_stk_status(checkout_request_id)
+  File "C:\Users\Tric\Desktop\Kiarie\backend\payments\services.py", line 216, in query_stk_status
+    response.raise_for_status()
+  File "C:\Users\Tric\Desktop\Kiarie\backend\venv\lib\site-packages\requests\models.py", line 1026, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 429 Client Error: Too Many Requests for url: https://sandbox.safaricom.co.ke/mpesa/stkpushquery/v1/query
+Transaction status updated to: processing
+Successfully returning transaction data for ws_CO_18012026163128515720624242
+STK status query failed: 429 Client Error: Too Many Requests for url: https://sandbox.safaricom.co.ke/mpesa/stkpushquery/v1/query
+Error querying M-Pesa status: 429 Client Error: Too Many Requests for url: https://sandbox.safaricom.co.ke/mpesa/stkpushquery/v1/query
+Traceback (most recent call last):
+  File "C:\Users\Tric\Desktop\Kiarie\backend\payments\services.py", line 473, in check_payment_status
+    status_response = self.api_client.query_stk_status(checkout_request_id)
+  File "C:\Users\Tric\Desktop\Kiarie\backend\payments\services.py", line 216, in query_stk_status
+    response.raise_for_status()
+  File "C:\Users\Tric\Desktop\Kiarie\backend\venv\lib\site-packages\requests\models.py", line 1026, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 429 Client Error: Too Many Requests for url: https://sandbox.safaricom.co.ke/mpesa/stkpushquery/v1/query
+Transaction status updated to: processing
+Successfully returning transaction data for ws_CO_18012026163128515720624242
+M-Pesa status response: {'ResponseCode': '0', 'ResponseDescription': 'The service request has been accepted successfully', 'MerchantRequestID': '9951-436a-b4a5-04d79601091e16813', 'CheckoutRequestID': 'ws_CO_18012026163128515720624242', 'ResultCode': '4999', 'ResultDesc': 'The transaction is still under processing'}
+Transaction ws_CO_18012026163128515720624242 marked as failed
+Transaction status updated to: failed
+Successfully returning transaction data for ws_CO_18012026163128515720624242
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Token refreshed for Sandbox Config
+Refreshed 1 M-Pesa access tokens
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Token refreshed for Sandbox Config
+Refreshed 1 M-Pesa access tokens
+Timed out 0 stuck transactions
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+High failure rate detected: 100.0%
+Payment monitoring: 1 transactions, 1 failed (100.0%)
+Admin alert sent: High Payment Failure Rate
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+New M-Pesa access token fetched for Sandbox Config
+STK Push initiated successfully: ws_CO_18012026174518513720624242
+=== Check Payment Status Request ===
+=== Check Payment Status Request ===
+Request Data: {'checkout_request_id': 'ws_CO_18012026174518513720624242'}
+Request Data: {'checkout_request_id': 'ws_CO_18012026174518513720624242'}
+User: tricrck@gmail.com
+User: tricrck@gmail.com
+Looking for transaction with checkout_request_id: ws_CO_18012026174518513720624242
+Looking for transaction with checkout_request_id: ws_CO_18012026174518513720624242
+Found transaction: 5
+Transaction status: processing
+Transaction 5 is still processing, querying M-Pesa API
+Querying M-Pesa API for transaction status: ws_CO_18012026174518513720624242
+Found transaction: 5
+Transaction status: processing
+Transaction 5 is still processing, querying M-Pesa API
+Querying M-Pesa API for transaction status: ws_CO_18012026174518513720624242
+M-Pesa status response: {'ResponseCode': '0', 'ResponseDescription': 'The service request has been accepted successfully', 'MerchantRequestID': '3ae6-4b6f-8aea-7241ea6de3101430', 'CheckoutRequestID': 'ws_CO_18012026174518513720624242', 'ResultCode': '4999', 'ResultDesc': 'The transaction is still under processing'}
+Transaction ws_CO_18012026174518513720624242 still processing. Will retry later.
+Transaction status updated to: processing
+Successfully returning transaction data for ws_CO_18012026174518513720624242
+M-Pesa status response: {'ResponseCode': '0', 'ResponseDescription': 'The service request has been accepted successfully', 'MerchantRequestID': '3ae6-4b6f-8aea-7241ea6de3101430', 'CheckoutRequestID': 'ws_CO_18012026174518513720624242', 'ResultCode': '4999', 'ResultDesc': 'The transaction is still under processing'}
+Transaction ws_CO_18012026174518513720624242 still processing. Will retry later.
+Transaction status updated to: processing
+Successfully returning transaction data for ws_CO_18012026174518513720624242
+=== Check Payment Status Request ===
+Request Data: {'checkout_request_id': 'ws_CO_18012026174518513720624242'}
+User: tricrck@gmail.com
+Looking for transaction with checkout_request_id: ws_CO_18012026174518513720624242
+Found transaction: 5
+Transaction status: processing
+Transaction 5 is still processing, querying M-Pesa API
+Querying M-Pesa API for transaction status: ws_CO_18012026174518513720624242
+M-Pesa status response: {'ResponseCode': '0', 'ResponseDescription': 'The service request has been accepted successfully', 'MerchantRequestID': '3ae6-4b6f-8aea-7241ea6de3101430', 'CheckoutRequestID': 'ws_CO_18012026174518513720624242', 'ResultCode': '4999', 'ResultDesc': 'The transaction is still under processing'}
+Transaction ws_CO_18012026174518513720624242 still processing. Will retry later.
+Transaction status updated to: processing
+Successfully returning transaction data for ws_CO_18012026174518513720624242
+Token refreshed for Sandbox Config
+Refreshed 1 M-Pesa access tokens
+Checked 0 pending transactions, updated 0
+Querying M-Pesa API for transaction status: ws_CO_18012026174518513720624242
+STK status query failed: 429 Client Error: Too Many Requests for url: https://sandbox.safaricom.co.ke/mpesa/stkpushquery/v1/query
+Error querying M-Pesa status: 429 Client Error: Too Many Requests for url: https://sandbox.safaricom.co.ke/mpesa/stkpushquery/v1/query
+Traceback (most recent call last):
+  File "C:\Users\Tric\Desktop\Kiarie\backend\payments\services.py", line 473, in check_payment_status
+    status_response = self.api_client.query_stk_status(checkout_request_id)
+  File "C:\Users\Tric\Desktop\Kiarie\backend\payments\services.py", line 216, in query_stk_status
+    response.raise_for_status()
+  File "C:\Users\Tric\Desktop\Kiarie\backend\venv\lib\site-packages\requests\models.py", line 1026, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 429 Client Error: Too Many Requests for url: https://sandbox.safaricom.co.ke/mpesa/stkpushquery/v1/query
+Checked 1 pending transactions, updated 0
+Querying M-Pesa API for transaction status: ws_CO_18012026174518513720624242
+STK status query failed: 429 Client Error: Too Many Requests for url: https://sandbox.safaricom.co.ke/mpesa/stkpushquery/v1/query
+Error querying M-Pesa status: 429 Client Error: Too Many Requests for url: https://sandbox.safaricom.co.ke/mpesa/stkpushquery/v1/query
+Traceback (most recent call last):
+  File "C:\Users\Tric\Desktop\Kiarie\backend\payments\services.py", line 473, in check_payment_status
+    status_response = self.api_client.query_stk_status(checkout_request_id)
+  File "C:\Users\Tric\Desktop\Kiarie\backend\payments\services.py", line 216, in query_stk_status
+    response.raise_for_status()
+  File "C:\Users\Tric\Desktop\Kiarie\backend\venv\lib\site-packages\requests\models.py", line 1026, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 429 Client Error: Too Many Requests for url: https://sandbox.safaricom.co.ke/mpesa/stkpushquery/v1/query
+Checked 1 pending transactions, updated 0
+Timed out 0 stuck transactions
+Token refreshed for Sandbox Config
+Refreshed 1 M-Pesa access tokens
+=== Check Payment Status Request ===
+Request Data: {'checkout_request_id': 'ws_CO_18012026174518513720624242'}
+User: tricrck@gmail.com
+Looking for transaction with checkout_request_id: ws_CO_18012026174518513720624242
+Found transaction: 5
+Transaction status: processing
+Transaction 5 is still processing, querying M-Pesa API
+Querying M-Pesa API for transaction status: ws_CO_18012026174518513720624242
+M-Pesa status response: {'ResponseCode': '0', 'ResponseDescription': 'The service request has been accepted successfully', 'MerchantRequestID': '3ae6-4b6f-8aea-7241ea6de3101430', 'CheckoutRequestID': 'ws_CO_18012026174518513720624242', 'ResultCode': '1032', 'ResultDesc': 'Request Cancelled by user.'}
+Transaction ws_CO_18012026174518513720624242 marked as cancelled
+Transaction status updated to: cancelled
+Successfully returning transaction data for ws_CO_18012026174518513720624242
+=== Check Payment Status Request ===
+Request Data: {'checkout_request_id': 'ws_CO_18012026174518513720624242'}
+User: tricrck@gmail.com
+Looking for transaction with checkout_request_id: ws_CO_18012026174518513720624242
+Found transaction: 5
+Transaction status: cancelled
+Successfully returning transaction data for ws_CO_18012026174518513720624242
+=== Check Payment Status Request ===
+Request Data: {'checkout_request_id': 'ws_CO_18012026174518513720624242'}
+User: tricrck@gmail.com
+Looking for transaction with checkout_request_id: ws_CO_18012026174518513720624242
+Found transaction: 5
+Transaction status: cancelled
+Successfully returning transaction data for ws_CO_18012026174518513720624242
+=== Check Payment Status Request ===
+Request Data: {'checkout_request_id': 'ws_CO_18012026174518513720624242'}
+User: tricrck@gmail.com
+Looking for transaction with checkout_request_id: ws_CO_18012026174518513720624242
+Found transaction: 5
+Transaction status: cancelled
+Successfully returning transaction data for ws_CO_18012026174518513720624242
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+=== Check Payment Status Request ===
+=== Check Payment Status Request ===
+Request Data: {'checkout_request_id': 'ws_CO_18012026174518513720624242'}
+Request Data: {'checkout_request_id': 'ws_CO_18012026174518513720624242'}
+User: tricrck@gmail.com
+User: tricrck@gmail.com
+Looking for transaction with checkout_request_id: ws_CO_18012026174518513720624242
+Looking for transaction with checkout_request_id: ws_CO_18012026174518513720624242
+Found transaction: 5
+Transaction status: cancelled
+Successfully returning transaction data for ws_CO_18012026174518513720624242
+Found transaction: 5
+Transaction status: cancelled
+Successfully returning transaction data for ws_CO_18012026174518513720624242
+Checked 0 pending transactions, updated 0
+=== Check Payment Status Request ===
+Request Data: {'checkout_request_id': 'ws_CO_18012026174518513720624242'}
+User: tricrck@gmail.com
+Looking for transaction with checkout_request_id: ws_CO_18012026174518513720624242
+Found transaction: 5
+Transaction status: cancelled
+Successfully returning transaction data for ws_CO_18012026174518513720624242
+=== Check Payment Status Request ===
+Request Data: {'checkout_request_id': 'ws_CO_18012026174518513720624242'}
+User: tricrck@gmail.com
+Looking for transaction with checkout_request_id: ws_CO_18012026174518513720624242
+Found transaction: 5
+Transaction status: cancelled
+Successfully returning transaction data for ws_CO_18012026174518513720624242
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+High failure rate detected: 100.0%
+Payment monitoring: 1 transactions, 1 failed (100.0%)
+Admin alert sent: High Payment Failure Rate

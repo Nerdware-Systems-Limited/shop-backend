@@ -329,7 +329,7 @@ class CheckPaymentStatusView(APIView):
                 except Exception as e:
                     logger.error(f"Error querying M-Pesa API: {str(e)}")
                     # Continue with existing transaction data even if API query fails
-            
+            print(transaction.status)
             # Prepare response
             response_data = {
                 'transaction': MpesaTransactionSerializer(transaction).data,

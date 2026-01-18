@@ -268,6 +268,9 @@ class MpesaAPIClient:
                 refund.result_desc = response_data.get('errorMessage', 'Unknown error')
             
             refund.save()
+            # Send refund notification
+            from .tasks import send_refund_notification
+            send_refund_notification.delay(refund.id)
             return refund
             
         except requests.RequestException as e:
@@ -351,6 +354,10 @@ class MpesaCallbackProcessor:
                     transaction_date=transaction_date,
                     callback_data=callback_data
                 )
+
+                # Send payment confirmation email
+                from .tasks import send_payment_confirmation_email
+                send_payment_confirmation_email.delay(transaction.id)
                 
                 # Update order if exists
                 if transaction.order:
@@ -367,6 +374,9 @@ class MpesaCallbackProcessor:
                     result_desc=result_desc,
                     callback_data=callback_data
                 )
+                # Send failure notification
+                from .tasks import send_payment_failed_notification
+                send_payment_failed_notification.delay(transaction.id)
                 logger.warning(f"Transaction failed: {result_desc}")
             
             callback_log.is_processed = True
@@ -506,7 +516,9 @@ class MpesaPaymentService:
                                     transaction_date=transaction_date,
                                     callback_data=status_response
                                 )
-                                
+                                from .tasks import send_payment_confirmation_email
+                                send_payment_confirmation_email.delay(transaction.id)
+
                                 # Update order if exists
                                 if transaction.order:
                                     MpesaCallbackProcessor._update_order_payment(
@@ -517,7 +529,16 @@ class MpesaPaymentService:
                                 logger.info(f"Transaction {checkout_request_id} marked as completed")
                             else:
                                 logger.warning(f"Missing receipt number or date in successful response")
-                        
+                        elif result_code == '4999':
+                            # Still processing — do nothing, keep pending
+                            transaction.result_code = int(result_code)
+                            transaction.result_desc = result_desc
+                            transaction.save()
+                            logger.info(
+                                f"Transaction {checkout_request_id} still processing. Will retry later."
+                            )
+
+                            return transaction
                         elif result_code in ['1032', '1037']:
                             # User cancelled or timeout - mark as cancelled
                             transaction.status = 'cancelled' if result_code == '1032' else 'timeout'
@@ -534,6 +555,10 @@ class MpesaPaymentService:
                                 result_desc=result_desc,
                                 callback_data=status_response
                             )
+
+                            from .tasks import send_payment_failed_notification
+                            send_payment_failed_notification.delay(transaction.id)
+
                             logger.info(f"Transaction {checkout_request_id} marked as failed")
                     
                 except Exception as e:

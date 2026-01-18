@@ -22,7 +22,7 @@ from .serializers import (
     PasswordResetConfirmSerializer
 )
 from backend.pagination import StandardResultsSetPagination, LargeResultsSetPagination
-
+from .tasks import send_welcome_email, send_password_reset_email_async, send_loyalty_points_notification
 
 class RegisterView(generics.CreateAPIView):
     """API endpoint for user registration"""
@@ -35,6 +35,9 @@ class RegisterView(generics.CreateAPIView):
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
         
+        # Send welcome email asynchronously using Celery
+        send_welcome_email.delay(user.id)
+
         # Generate tokens for the new user
         refresh = RefreshToken.for_user(user)
         
@@ -247,6 +250,13 @@ class CustomerViewSet(viewsets.ReadOnlyModelViewSet):
             points = int(points)
             customer.loyalty_points += points
             customer.save(update_fields=['loyalty_points'])
+
+            # Send notification asynchronously
+            send_loyalty_points_notification.delay(
+                customer.id,
+                points,
+                "Admin awarded loyalty points"
+            )
             
             return Response({
                 'message': f'Added {points} loyalty points',
@@ -277,6 +287,8 @@ class PasswordResetRequestView(generics.GenericAPIView):
     
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
+
+        print("Yo testing Me")
         
         if not serializer.is_valid():
             # Always return a success response for security
@@ -301,12 +313,13 @@ class PasswordResetRequestView(generics.GenericAPIView):
             expires_at=expires_at
         )
         
-        # Send email
-        try:
-            send_password_reset_email(user, reset_code)
-        except Exception as e:
-            # Log the error but don't reveal to user
-            print(f"Failed to send reset email: {e}")
+        # Send email asynchronously using Celery
+        print(f"📝 Reset code created: {reset_code}")
+        
+        # Send email asynchronously using Celery
+        print(f"📧 Queuing email task for user {user.id}")
+        task = send_password_reset_email_async.delay(user.id, reset_code)
+        print(f"✅ Task queued with ID: {task.id}")
         
         return Response({
             "message": "If an account exists with this email, a reset code will be sent."
