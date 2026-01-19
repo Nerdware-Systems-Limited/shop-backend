@@ -4,6 +4,7 @@ Celery configuration for backend project.
 import os
 from celery import Celery
 from celery.schedules import crontab
+from decouple import config
 
 # Set the default Django settings module for the 'celery' program.
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'backend.settings')
@@ -205,7 +206,8 @@ app.conf.beat_schedule = {
 # Celery configuration
 app.conf.update(
     # Task result backend
-    result_backend='redis://127.0.0.1:6380/3',
+    result_backend=config('CELERY_RESULT_BACKEND', default='redis://127.0.0.1:0'),
+    
     
     # Task serialization
     task_serializer='json',
