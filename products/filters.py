@@ -65,7 +65,8 @@ class ProductFilter(django_filters.FilterSet):
         """Filter products that are in stock"""
         if value:
             return queryset.filter(stock_quantity__gt=0)
-        return queryset.filter(stock_quantity=0)
+        # When false, return all products (don't filter out-of-stock)
+        return queryset
     
     def filter_low_stock(self, queryset, name, value):
         """Filter products with low stock"""
@@ -85,7 +86,8 @@ class ProductFilter(django_filters.FilterSet):
             ).filter(
                 Q(sale_ends_at__isnull=True) | Q(sale_ends_at__gte=now)
             )
-        return queryset.filter(is_on_sale=False)
+        # When false, return all products (don't filter non-sale items)
+        return queryset
     
     def filter_new_arrivals(self, queryset, name, value):
         """Filter new arrival products that haven't expired"""
@@ -96,7 +98,8 @@ class ProductFilter(django_filters.FilterSet):
             ).filter(
                 Q(new_arrival_until__isnull=True) | Q(new_arrival_until__gte=now)
             )
-        return queryset.filter(is_new_arrival=False)
+        # When false, return all products (don't filter non-new items)
+        return queryset
     
     def filter_has_warranty(self, queryset, name, value):
         """Filter products with/without warranty"""
