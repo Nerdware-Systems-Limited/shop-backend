@@ -181,9 +181,21 @@ app.conf.beat_schedule = {
         'task': 'products.tasks.auto_approve_verified_reviews',
         'schedule': crontab(hour=2, minute=0),  # Daily at 2 AM
     },
-    'cleanup-spam-reviews': {
-        'task': 'products.tasks.cleanup_spam_reviews',
-        'schedule': crontab(day_of_week=0, hour=3, minute=0),  # Every Sunday at 3 AM
+    'expire-sales-daily': {
+        'task': 'products.tasks.expire_sale_prices',
+        'schedule': crontab(hour=0, minute=5),  # Daily at 12:05 AM
+    },
+    'expire-new-arrivals-daily': {
+        'task': 'products.tasks.expire_new_arrivals',
+        'schedule': crontab(hour=0, minute=10),  # Daily at 12:10 AM
+    },
+    'activate-scheduled-products': {
+        'task': 'products.tasks.activate_scheduled_products',
+        'schedule': crontab(hour=0, minute=15),  # Daily at 12:15 AM
+    },
+    'update-bestsellers-daily': {
+        'task': 'products.tasks.update_bestseller_status',
+        'schedule': crontab(hour=3, minute=0),  # Daily at 3 AM
     },
     'generate-product-performance-report': {
         'task': 'products.tasks.generate_product_performance_report',

@@ -68,7 +68,9 @@ def check_out_of_stock_products():
         # Get products that are out of stock
         out_of_stock = Product.objects.filter(
             is_active=True,
-            stock_quantity=0
+            stock_quantity=0,
+            preorder_available=False,
+            backorder_allowed=False
         ).select_related('category', 'brand')
         
         oos_count = out_of_stock.count()
@@ -563,12 +565,12 @@ def update_product_popularity_scores():
             score = (
                 (product.recent_sales or 0) * 10 +
                 (product.review_count or 0) * 5 +
-                (product.avg_rating or 0) * 2
+                (product.avg_rating or 0) * 2 +
+                (product.view_count or 0) * 0.1
             )
             
-            # Update product (if you have popularity_score field)
-            # product.popularity_score = score
-            # product.save(update_fields=['popularity_score'])
+            product.popularity_score = round(score, 2)  # Actually saves now
+            product.save(update_fields=['popularity_score'])
             updated_count += 1
         
         logger.info(f"Updated popularity scores for {updated_count} products")
@@ -669,7 +671,97 @@ def auto_expire_flash_sales():
     except Exception as exc:
         logger.error(f"Failed to expire flash sales: {exc}", exc_info=True)
         raise
+@shared_task
+def expire_sale_prices():
+    """Auto-expire sales based on sale_ends_at"""
+    try:
+        expired = Product.objects.filter(
+            is_on_sale=True,
+            sale_ends_at__lte=timezone.now()
+        )
+        
+        count = 0
+        for product in expired:
+            product.is_on_sale = False
+            product.sale_price = None
+            product.save(update_fields=['is_on_sale', 'sale_price'])
+            count += 1
+        
+        logger.info(f"Expired {count} sales")
+        return f"Expired {count} sales"
+    
+    except Exception as exc:
+        logger.error(f"Failed to expire sales: {exc}", exc_info=True)
+        raise
 
+
+@shared_task
+def expire_new_arrivals():
+    """Auto-remove new arrival badge after expiry date"""
+    try:
+        expired = Product.objects.filter(
+            is_new_arrival=True,
+            new_arrival_until__lte=timezone.now()
+        )
+        
+        count = expired.update(is_new_arrival=False)
+        
+        logger.info(f"Expired {count} new arrivals")
+        return f"Expired {count} new arrivals"
+    
+    except Exception as exc:
+        logger.error(f"Failed to expire new arrivals: {exc}", exc_info=True)
+        raise
+
+
+@shared_task
+def activate_scheduled_products():
+    """Activate products that have reached their publish_date"""
+    try:
+        products_to_publish = Product.objects.filter(
+            is_active=False,
+            publish_date__lte=timezone.now()
+        )
+        
+        count = products_to_publish.update(is_active=True)
+        
+        logger.info(f"Published {count} scheduled products")
+        return f"Published {count} scheduled products"
+    
+    except Exception as exc:
+        logger.error(f"Failed to activate scheduled products: {exc}", exc_info=True)
+        raise
+
+
+@shared_task
+def update_bestseller_status():
+    """Update bestseller status based on sales (last 30 days)"""
+    try:
+        thirty_days_ago = timezone.now() - timedelta(days=30)
+        
+        # Get top 20 products by sales
+        top_sellers = Product.objects.filter(
+            is_active=True
+        ).annotate(
+            sales_count=Count(
+                'orderitem',
+                filter=Q(orderitem__order__created_at__gte=thirty_days_ago)
+            )
+        ).order_by('-sales_count')[:20]
+        
+        # Reset all bestsellers
+        Product.objects.update(is_bestseller=False)
+        
+        # Mark top sellers as bestsellers
+        top_seller_ids = list(top_sellers.values_list('id', flat=True))
+        Product.objects.filter(id__in=top_seller_ids).update(is_bestseller=True)
+        
+        logger.info(f"Updated bestseller status for {len(top_seller_ids)} products")
+        return f"Updated {len(top_seller_ids)} bestsellers"
+    
+    except Exception as exc:
+        logger.error(f"Failed to update bestseller status: {exc}", exc_info=True)
+        raise
 
 # ============================================================================
 # IMAGE & MEDIA TASKS

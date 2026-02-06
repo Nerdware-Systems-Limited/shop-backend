@@ -1,7 +1,7 @@
 from rest_framework import viewsets, filters, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
+from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated, AllowAny
 from django_filters.rest_framework import DjangoFilterBackend
 from django.db.models import Q, Avg, Count, F, Prefetch, Sum, Case, When, DecimalField
 from django.db import models
@@ -21,6 +21,7 @@ from backend.pagination import (
     SmallResultsSetPagination,
     LargeResultsSetPagination
 )
+from django.utils import timezone
 
 
 class CategoryViewSet(viewsets.ModelViewSet):
@@ -302,6 +303,258 @@ class ProductViewSet(viewsets.ModelViewSet):
                 {'error': 'Invalid stock_quantity value'}, 
                 status=status.HTTP_400_BAD_REQUEST
             )
+    # ============================================================================
+    # NEW PRODUCT DISCOVERY ENDPOINTS
+    # ============================================================================
+
+    @action(detail=False, methods=['get'])
+    def new_arrivals(self, request):
+        """Get new arrival products that haven't expired"""
+        now = timezone.now()
+        products = self.get_queryset().filter(
+            is_new_arrival=True
+        ).filter(
+            Q(new_arrival_until__isnull=True) | Q(new_arrival_until__gte=now)
+        ).order_by('-created_at')
+        
+        paginator = StandardResultsSetPagination()
+        page = paginator.paginate_queryset(products, request)
+        serializer = ProductListSerializer(page, many=True)
+        return paginator.get_paginated_response(serializer.data)
+
+
+    @action(detail=False, methods=['get'])
+    def bestsellers(self, request):
+        """Get bestseller products"""
+        products = self.get_queryset().filter(
+            is_bestseller=True
+        ).order_by('-popularity_score')
+        
+        paginator = StandardResultsSetPagination()
+        page = paginator.paginate_queryset(products, request)
+        serializer = ProductListSerializer(page, many=True)
+        return paginator.get_paginated_response(serializer.data)
+
+
+    @action(detail=False, methods=['get'])
+    def trending(self, request):
+        """Get trending products based on popularity score"""
+        products = self.get_queryset().filter(
+            popularity_score__gt=0
+        ).order_by('-popularity_score', '-view_count')[:50]
+        
+        paginator = StandardResultsSetPagination()
+        page = paginator.paginate_queryset(products, request)
+        serializer = ProductListSerializer(page, many=True)
+        return paginator.get_paginated_response(serializer.data)
+
+
+    @action(detail=False, methods=['get'])
+    def deals_of_the_day(self, request):
+        """Get products with highest discounts currently on sale"""
+        now = timezone.now()
+        
+        products = self.get_queryset().filter(
+            is_on_sale=True
+        ).filter(
+            Q(sale_ends_at__isnull=True) | Q(sale_ends_at__gte=now)
+        ).order_by('-discount_percentage', '-popularity_score')[:20]
+        
+        serializer = ProductListSerializer(products, many=True)
+        return Response(serializer.data)
+
+
+    @action(detail=False, methods=['get'])
+    def preorder(self, request):
+        """Get products available for preorder"""
+        products = self.get_queryset().filter(
+            preorder_available=True,
+            stock_quantity=0
+        ).order_by('preorder_release_date')
+        
+        paginator = StandardResultsSetPagination()
+        page = paginator.paginate_queryset(products, request)
+        serializer = ProductListSerializer(page, many=True)
+        return paginator.get_paginated_response(serializer.data)
+
+
+    @action(detail=False, methods=['get'])
+    def coming_soon(self, request):
+        """Get products scheduled to be published"""
+        now = timezone.now()
+        
+        # Note: This shows inactive products, so you may want to restrict to admins
+        products = Product.objects.filter(
+            is_active=False,
+            publish_date__isnull=False,
+            publish_date__gte=now
+        ).select_related('category', 'brand').prefetch_related('images').order_by('publish_date')
+        
+        paginator = StandardResultsSetPagination()
+        page = paginator.paginate_queryset(products, request)
+        serializer = ProductListSerializer(page, many=True)
+        return paginator.get_paginated_response(serializer.data)
+
+
+    # ============================================================================
+    # UPDATED on_sale ACTION (replace the existing one)
+    # ============================================================================
+
+    @action(detail=False, methods=['get'])
+    def on_sale(self, request):
+        """Get products that are currently on sale"""
+        now = timezone.now()
+        
+        products = self.get_queryset().filter(
+            is_on_sale=True
+        ).filter(
+            Q(sale_ends_at__isnull=True) | Q(sale_ends_at__gte=now)
+        ).order_by('-discount_percentage')
+        
+        paginator = StandardResultsSetPagination()
+        page = paginator.paginate_queryset(products, request)
+        serializer = ProductListSerializer(page, many=True)
+        return paginator.get_paginated_response(serializer.data)
+
+
+    # ============================================================================
+    # PRODUCT INTERACTION ENDPOINTS
+    # ============================================================================
+
+    @action(detail=True, methods=['post'], permission_classes=[AllowAny])
+    def increment_view(self, request, slug=None):
+        """Increment product view count (public endpoint)"""
+        product = self.get_object()
+        product.increment_view_count()
+        
+        return Response({
+            'message': 'View count updated',
+            'view_count': product.view_count
+        })
+
+
+    @action(detail=True, methods=['get'])
+    def related(self, request, slug=None):
+        """Get related products based on category and brand"""
+        product = self.get_object()
+        related_products = product.get_related_products(limit=8)
+        
+        serializer = ProductListSerializer(related_products, many=True)
+        return Response(serializer.data)
+
+
+    @action(detail=True, methods=['get'])
+    def check_availability(self, request, slug=None):
+        """Check detailed product availability and stock status"""
+        product = self.get_object()
+        
+        return Response({
+            'sku': product.sku,
+            'name': product.name,
+            'stock_quantity': product.stock_quantity,
+            'stock_status': product.stock_status,
+            'can_purchase': product.can_purchase,
+            'is_in_stock': product.is_in_stock,
+            'is_low_stock': product.is_low_stock,
+            'low_stock_threshold': product.low_stock_threshold,
+            'preorder_available': product.preorder_available,
+            'preorder_release_date': product.preorder_release_date,
+            'backorder_allowed': product.backorder_allowed,
+            'restock_date': product.restock_date,
+            'max_quantity_per_order': product.max_quantity_per_order,
+        })
+
+
+    # ============================================================================
+    # ADMIN-FOCUSED ENDPOINTS
+    # ============================================================================
+
+    @action(detail=True, methods=['patch'], permission_classes=[IsAuthenticated])
+    def toggle_featured(self, request, slug=None):
+        """Toggle featured status of a product"""
+        product = self.get_object()
+        product.is_featured = not product.is_featured
+        product.save(update_fields=['is_featured'])
+        
+        # Clear cache
+        cache.delete_pattern('products_list_*', version='pagination')
+        
+        return Response({
+            'message': 'Featured status updated',
+            'is_featured': product.is_featured
+        })
+
+
+    @action(detail=True, methods=['patch'], permission_classes=[IsAuthenticated])
+    def toggle_bestseller(self, request, slug=None):
+        """Manually toggle bestseller status"""
+        product = self.get_object()
+        product.is_bestseller = not product.is_bestseller
+        product.save(update_fields=['is_bestseller'])
+        
+        # Clear cache
+        cache.delete_pattern('products_list_*', version='pagination')
+        
+        return Response({
+            'message': 'Bestseller status updated',
+            'is_bestseller': product.is_bestseller
+        })
+
+
+    @action(detail=True, methods=['patch'], permission_classes=[IsAuthenticated])
+    def update_visibility(self, request, slug=None):
+        """Update product visibility"""
+        product = self.get_object()
+        visibility = request.data.get('visibility')
+        
+        if visibility not in dict(Product.VISIBILITY_CHOICES):
+            return Response(
+                {'error': 'Invalid visibility choice'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        product.visibility = visibility
+        product.save(update_fields=['visibility'])
+        
+        return Response({
+            'message': 'Visibility updated',
+            'visibility': product.visibility
+        })
+
+
+    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
+    def schedule_publish(self, request, slug=None):
+        """Schedule a product to be published at a specific date"""
+        product = self.get_object()
+        publish_date = request.data.get('publish_date')
+        
+        if not publish_date:
+            return Response(
+                {'error': 'publish_date is required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        try:
+            from django.utils.dateparse import parse_datetime
+            publish_datetime = parse_datetime(publish_date)
+            
+            if not publish_datetime:
+                raise ValueError("Invalid datetime format")
+            
+            product.publish_date = publish_datetime
+            product.is_active = False  # Deactivate until publish date
+            product.save(update_fields=['publish_date', 'is_active'])
+            
+            return Response({
+                'message': 'Product scheduled for publishing',
+                'publish_date': product.publish_date,
+                'is_active': product.is_active
+            })
+        except Exception as e:
+            return Response(
+                {'error': str(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
@@ -341,3 +594,61 @@ class ReviewViewSet(viewsets.ModelViewSet):
         page = paginator.paginate_queryset(reviews, request)
         serializer = self.get_serializer(page, many=True)
         return paginator.get_paginated_response(serializer.data)
+    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
+    def mark_helpful(self, request, pk=None):
+        """Mark a review as helpful"""
+        review = self.get_object()
+        
+        # Increment helpful count
+        from django.db.models import F
+        Review.objects.filter(pk=review.pk).update(helpful_count=F('helpful_count') + 1)
+        
+        # Refresh from database to get updated count
+        review.refresh_from_db()
+        
+        return Response({
+            'message': 'Review marked as helpful',
+            'helpful_count': review.helpful_count
+        })
+
+
+    @action(detail=False, methods=['get'])
+    def pending(self, request):
+        """Get pending reviews (admin only)"""
+        if not request.user.is_staff:
+            return Response(
+                {'error': 'Admin access required'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        reviews = Review.objects.filter(
+            is_approved=False
+        ).select_related('customer__user', 'product').order_by('-created_at')
+        
+        paginator = self.pagination_class()
+        page = paginator.paginate_queryset(reviews, request)
+        serializer = self.get_serializer(page, many=True)
+        return paginator.get_paginated_response(serializer.data)
+
+
+    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
+    def approve(self, request, pk=None):
+        """Approve a review (admin only)"""
+        if not request.user.is_staff:
+            return Response(
+                {'error': 'Admin access required'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        review = self.get_object()
+        review.is_approved = True
+        review.save(update_fields=['is_approved'])
+        
+        # Send approval notification
+        from .tasks import send_review_approval_notification
+        send_review_approval_notification.delay(review.id)
+        
+        return Response({
+            'message': 'Review approved',
+            'is_approved': review.is_approved
+        })
