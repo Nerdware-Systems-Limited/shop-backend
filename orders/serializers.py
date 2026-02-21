@@ -8,7 +8,7 @@ from .models import (
 from customers.serializers import AddressSerializer, CustomerSerializer
 from products.serializers import ProductListSerializer
 from products.models import Product
-from customers.models import Address
+from customers.models import Address, Customer
 import uuid
 
 
@@ -222,28 +222,50 @@ class OrderCreateSerializer(serializers.ModelSerializer):
         required=False
     )
     use_default_address = serializers.BooleanField(write_only=True, default=True)
-    billing_address_id = serializers.PrimaryKeyRelatedField(
-        queryset=Address.objects.all(),
+    billing_address_id = serializers.CharField(
         write_only=True,
         required=False,
-        allow_null=True
+        allow_null=True,
+        allow_blank=True,
     )
-    shipping_address_id = serializers.PrimaryKeyRelatedField(
-        queryset=Address.objects.all(),
+    shipping_address_id = serializers.CharField(
         write_only=True,
         required=False,
-        allow_null=True
+        allow_null=True,
+        allow_blank=True,
     )
+    # Inline address objects sent by the frontend for guest / new addresses
+    shipping_address = serializers.JSONField(write_only=True, required=False, allow_null=True)
+    billing_address = serializers.JSONField(write_only=True, required=False, allow_null=True)
+    # Guest fields
+    guest_first_name = serializers.CharField(write_only=True, required=False, allow_blank=True)
+    guest_last_name = serializers.CharField(write_only=True, required=False, allow_blank=True)
+    guest_email = serializers.EmailField(write_only=True, required=False, allow_blank=True)
+    guest_phone = serializers.CharField(write_only=True, required=False, allow_blank=True)
     
     class Meta:
         model = Order
         fields = [
             'items', 'shipping_method_id', 'use_default_address',
             'billing_address_id', 'shipping_address_id',
+            'shipping_address', 'billing_address',
             'customer_notes', 'is_gift', 'gift_message',
-            'payment_method', 'discount_code'
+            'payment_method', 'discount_code',
+            # Guest fields
+            'guest_first_name', 'guest_last_name', 'guest_email', 'guest_phone',
         ]
     
+    def validate(self, data):
+        request = self.context['request']
+        if not request.user.is_authenticated:
+            if not data.get('guest_email'):
+                raise serializers.ValidationError({"guest_email": "Email is required for guest orders."})
+            if not data.get('guest_first_name'):
+                raise serializers.ValidationError({"guest_first_name": "First name is required for guest orders."})
+            if not data.get('guest_last_name'):
+                raise serializers.ValidationError({"guest_last_name": "Last name is required for guest orders."})
+        return data
+
     def validate_items(self, value):
         if not value or not isinstance(value, list):
             raise serializers.ValidationError("Items must be a non-empty list")
@@ -280,55 +302,126 @@ class OrderCreateSerializer(serializers.ModelSerializer):
     
     def create(self, validated_data):
         request = self.context['request']
+        print(request)
         items_data = validated_data.pop('items')
         shipping_method = validated_data.pop('shipping_method_id', None)
         use_default_address = validated_data.pop('use_default_address', True)
+        billing_address_id_raw = validated_data.pop('billing_address_id', None)
+        shipping_address_id_raw = validated_data.pop('shipping_address_id', None)
+        # Inline address dicts sent by the frontend (guest / new addresses)
+        shipping_address_data = validated_data.pop('shipping_address', None)
+        billing_address_data = validated_data.pop('billing_address', None)
+        guest_first_name = validated_data.pop('guest_first_name', '')
+        guest_last_name = validated_data.pop('guest_last_name', '')
+        guest_email = validated_data.pop('guest_email', '')
+        guest_phone = validated_data.pop('guest_phone', '')
         
-        # Get customer
+        is_guest = not request.user.is_authenticated
+
+        # ---------------------------------------------------------------
+        # Resolve customer
+        # ---------------------------------------------------------------
+        # Registered user → use their existing Customer profile.
+        # Guest user      → find or create a guest Customer (+ User) keyed
+        #                   on their email so the same guest is not duplicated.
+        #                   Their address is then saved normally to Address,
+        #                   making guest orders fully queryable alongside
+        #                   registered customer orders.
+        # ---------------------------------------------------------------
         customer = None
+
         if request.user.is_authenticated:
             try:
                 customer = request.user.customer
-            except:
+            except Exception:
                 raise serializers.ValidationError("User does not have a customer profile")
-        
-        # Get addresses - IMPROVED LOGIC
+
+        else:
+            # Build a deterministic username from the guest email
+            guest_username = f"guest_{guest_email}"
+
+            # Reuse existing guest User if the same email has ordered before
+            guest_user, user_created = User.objects.get_or_create(
+                username=guest_username,
+                defaults={
+                    "email": guest_email,
+                    "first_name": guest_first_name,
+                    "last_name": guest_last_name,
+                    "is_active": False,  # not a real login account
+                }
+            )
+
+            # The post_save signal auto-creates Customer, but guard anyway
+            customer, _ = Customer.objects.get_or_create(
+                user=guest_user,
+                defaults={"phone": guest_phone}
+            )
+
+            # Keep phone fresh on repeat orders
+            if not customer.phone and guest_phone:
+                customer.phone = guest_phone
+                customer.save(update_fields=["phone"])
+
+        # ---------------------------------------------------------------
+        # Address resolution
+        # ---------------------------------------------------------------
         billing_address = None
         shipping_address = None
-        
-        if customer and use_default_address:
-            # Try to get default addresses first
-            billing_address = customer.addresses.filter(
-                address_type='billing', is_default=True
-            ).first()
-            shipping_address = customer.addresses.filter(
-                address_type='shipping', is_default=True
-            ).first()
-            
-            # If no billing address, try to use any address
-            if not billing_address:
-                billing_address = customer.addresses.filter(is_default=True).first()
-            
-            # If no shipping address, try to use any address
-            if not shipping_address:
-                shipping_address = customer.addresses.filter(is_default=True).first()
+
+        if is_guest:
+            # Save the guest's address against their guest Customer record
+            raw = shipping_address_data or {}
+            shipping_address = Address.objects.create(
+                customer=customer,
+                address_type="shipping",
+                street_address=raw.get("street_address", ""),
+                apartment=raw.get("apartment", ""),
+                county=raw.get("county", ""),
+                subcounty=raw.get("subcounty", ""),
+                ward=raw.get("ward", ""),
+                city=raw.get("city", ""),
+                state=raw.get("county", ""),
+                postal_code=raw.get("postal_code", raw.get("postalCode", "")),
+                country=raw.get("country", "Kenya"),
+                is_default=True,
+            )
+            billing_address = shipping_address  # same address for guests
+
+        elif customer and use_default_address:
+            # Registered user — try typed default, fall back to any default
+            billing_address = (
+                customer.addresses.filter(address_type="billing", is_default=True).first()
+                or customer.addresses.filter(is_default=True).first()
+            )
+            shipping_address = (
+                customer.addresses.filter(address_type="shipping", is_default=True).first()
+                or customer.addresses.filter(is_default=True).first()
+            )
+
         else:
-            # Use provided address IDs
-            billing_address_id = validated_data.pop('billing_address_id', None)
-            shipping_address_id = validated_data.pop('shipping_address_id', None)
-            
-            if billing_address_id:
-                billing_address = billing_address_id
-            if shipping_address_id:
-                shipping_address = shipping_address_id
-            
-            # If only one address provided, use it for both
-            if billing_address and not shipping_address:
-                shipping_address = billing_address
-            elif shipping_address and not billing_address:
-                billing_address = shipping_address
-        
-        # Final validation - addresses must exist
+            # Registered user supplied explicit address PKs
+            if billing_address_id_raw:
+                try:
+                    billing_address = Address.objects.get(
+                        pk=int(billing_address_id_raw), customer=customer
+                    )
+                except (ValueError, TypeError, Address.DoesNotExist):
+                    raise serializers.ValidationError(
+                        {"billing_address_id": "Invalid billing address."}
+                    )
+            if shipping_address_id_raw:
+                try:
+                    shipping_address = Address.objects.get(
+                        pk=int(shipping_address_id_raw), customer=customer
+                    )
+                except (ValueError, TypeError, Address.DoesNotExist):
+                    raise serializers.ValidationError(
+                        {"shipping_address_id": "Invalid shipping address."}
+                    )
+            billing_address = billing_address or shipping_address
+            shipping_address = shipping_address or billing_address
+
+        # Every path must resolve both addresses by this point
         if not billing_address:
             raise serializers.ValidationError({
                 "billing_address": "Billing address is required. Please add an address to your profile."
@@ -397,9 +490,11 @@ class OrderCreateSerializer(serializers.ModelSerializer):
             discount_code=validated_data.get('discount_code', ''),
             ip_address=request.META.get('REMOTE_ADDR'),
             user_agent=request.META.get('HTTP_USER_AGENT', ''),
-            is_guest=not request.user.is_authenticated,
-            guest_email=request.data.get('email', '') if not request.user.is_authenticated else '',
-            guest_phone=request.data.get('phone', '') if not request.user.is_authenticated else '',
+            is_guest=is_guest,
+            guest_email=guest_email,
+            guest_phone=guest_phone,
+            guest_first_name=guest_first_name,
+            guest_last_name=guest_last_name,
         )
         
         # Create order items and update stock
@@ -435,7 +530,6 @@ class OrderCreateSerializer(serializers.ModelSerializer):
         )
         
         return order
-
 
 class OrderUpdateSerializer(serializers.ModelSerializer):
     class Meta:

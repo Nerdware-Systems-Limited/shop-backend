@@ -10,12 +10,15 @@ from .views import (
     CustomerViewSet,
     PasswordResetRequestView,
     PasswordResetCodeVerifyView,
-    PasswordResetConfirmView
+    PasswordResetConfirmView,
+    ContactMessageView,
+    ContactMessageAdminViewSet,
 )
 
 router = DefaultRouter()
 router.register(r'addresses', AddressViewSet, basename='address')
 router.register(r'all', CustomerViewSet, basename='customer')
+router.register(r'contact/admin', ContactMessageAdminViewSet, basename='contact-admin')  # NEW
 
 urlpatterns = [
     # Authentication endpoints
@@ -32,6 +35,7 @@ urlpatterns = [
     path('password/reset/verify/', PasswordResetCodeVerifyView.as_view(), name='password-reset-verify'),
     path('password/reset/confirm/', PasswordResetConfirmView.as_view(), name='password-reset-confirm'),
     
+    path('contact/', ContactMessageView.as_view(), name='contact-submit'),
     # Router URLs (addresses and customer list)
     path('', include(router.urls)),
 ]

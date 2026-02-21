@@ -145,7 +145,7 @@ class OrderAdmin(ImportExportModelAdmin):
             'fields': ('order_number', 'status', 'payment_status', 'payment_method')
         }),
         ('Customer Information', {
-            'fields': ('customer', 'is_guest', 'guest_email', 'guest_phone')
+            'fields': ('customer', 'is_guest', 'guest_email', 'guest_phone', 'guest_first_name', 'guest_last_name')
         }),
         ('Addresses', {
             'fields': ('billing_address', 'shipping_address')

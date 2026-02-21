@@ -22,6 +22,7 @@ from backend.pagination import (
     LargeResultsSetPagination
 )
 from django.utils import timezone
+from rest_framework.exceptions import NotFound
 
 
 class CategoryViewSet(viewsets.ModelViewSet):
@@ -138,6 +139,35 @@ class ProductViewSet(viewsets.ModelViewSet):
     
     # CRITICAL: Use cursor pagination for products (handles large datasets better)
     pagination_class = ProductCursorPagination
+
+    def get_object(self):
+        """
+        Override to support both exact slug match and prefix-based fallback.
+        Handles cases where external links use a shorter version of the slug.
+        """
+        queryset = self.get_queryset()
+        slug = self.kwargs.get(self.lookup_field, '')
+
+        # Strip any accidental query string bleed (e.g. slug?utm_source=...)
+        slug = slug.split('?')[0]
+
+        # 1. Try exact match first (fast path)
+        try:
+            obj = queryset.get(slug=slug)
+            self.check_object_permissions(self.request, obj)
+            return obj
+        except Product.DoesNotExist:
+            pass
+
+        # 2. Fallback: slug starts with the given value (handles truncated slugs)
+        matches = queryset.filter(slug__startswith=slug)
+        if matches.count() >= 1:
+            obj = matches.first()
+            self.check_object_permissions(self.request, obj)
+            return obj
+
+        # 3. Nothing found
+        raise NotFound(detail="PRODUCT NOT FOUND")
 
     def get_queryset(self):
         """

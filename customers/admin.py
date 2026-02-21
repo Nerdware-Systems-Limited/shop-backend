@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 from django.utils.html import format_html
 from django.utils.timezone import now
 
-from .models import Customer, Address, PasswordResetCode
+from .models import Customer, Address, PasswordResetCode, ContactMessage
 
 
 # =========================
@@ -229,7 +229,67 @@ class PasswordResetCodeAdmin(admin.ModelAdmin):
 
     mark_used.short_description = "✔ Mark selected codes as used"
 
+@admin.register(ContactMessage)
+class ContactMessageAdmin(admin.ModelAdmin):
+    list_display = (
+        'name',
+        'email',
+        'short_message',
+        'status_badge',
+        'ip_address',
+        'created_at',
+    )
+    list_filter = ('status', 'created_at')
+    search_fields = ('name', 'email', 'message')
+    readonly_fields = ('name', 'email', 'message', 'ip_address', 'created_at', 'updated_at')
+    ordering = ('-created_at',)
+    list_per_page = 25
 
+    fieldsets = (
+        ("Submission", {
+            'fields': ('name', 'email', 'message', 'ip_address', 'created_at'),
+        }),
+        ("Admin", {
+            'fields': ('status', 'admin_notes', 'updated_at'),
+        }),
+    )
+
+    actions = ('mark_read', 'mark_replied', 'mark_archived')
+
+    def short_message(self, obj):
+        return obj.message[:80] + '…' if len(obj.message) > 80 else obj.message
+    short_message.short_description = "Message"
+
+    def status_badge(self, obj):
+        colours = {
+            'new': '#e74c3c',
+            'read': '#f39c12',
+            'replied': '#27ae60',
+            'archived': '#95a5a6',
+        }
+        colour = colours.get(obj.status, '#333')
+        return format_html(
+            '<span style="background:{};color:#fff;padding:2px 8px;'
+            'border-radius:4px;font-size:11px;font-weight:bold;">{}</span>',
+            colour,
+            obj.get_status_display(),
+        )
+    status_badge.short_description = "Status"
+
+    def mark_read(self, request, queryset):
+        updated = queryset.exclude(status='read').update(status='read')
+        self.message_user(request, f"{updated} message(s) marked as read.")
+    mark_read.short_description = "✉ Mark selected as Read"
+
+    def mark_replied(self, request, queryset):
+        updated = queryset.update(status='replied')
+        self.message_user(request, f"{updated} message(s) marked as Replied.")
+    mark_replied.short_description = "✔ Mark selected as Replied"
+
+    def mark_archived(self, request, queryset):
+        updated = queryset.update(status='archived')
+        self.message_user(request, f"{updated} message(s) archived.")
+    mark_archived.short_description = "📦 Archive selected messages"
 # =========================
 # Register Custom User Admin
 # =========================

@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
-from .models import Customer, Address, PasswordResetCode  
+from .models import Customer, Address, PasswordResetCode, ContactMessage  
 from django.utils import timezone
 
 
@@ -254,3 +254,31 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
         attrs['user'] = user
         attrs['reset_code'] = reset_code
         return attrs
+
+class ContactMessageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ContactMessage
+        fields = ['id', 'name', 'email', 'message', 'created_at']
+        read_only_fields = ['id', 'created_at']
+
+    def validate_message(self, value):
+        if len(value.strip()) < 10:
+            raise serializers.ValidationError("Message must be at least 10 characters.")
+        return value.strip()
+
+    def validate_name(self, value):
+        if len(value.strip()) < 2:
+            raise serializers.ValidationError("Please enter your full name.")
+        return value.strip()
+
+
+class ContactMessageAdminSerializer(serializers.ModelSerializer):
+    """Extended serializer for admin use — includes status and notes."""
+    class Meta:
+        model = ContactMessage
+        fields = [
+            'id', 'name', 'email', 'message',
+            'status', 'admin_notes', 'ip_address',
+            'created_at', 'updated_at',
+        ]
+        read_only_fields = ['id', 'name', 'email', 'message', 'ip_address', 'created_at', 'updated_at']

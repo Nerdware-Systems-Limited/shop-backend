@@ -457,7 +457,124 @@ def analyze_customer_engagement():
     except Exception as exc:
         logger.error(f"Failed to analyze customer engagement: {exc}", exc_info=True)
         raise
+# Add this to your existing tasks.py
 
+@shared_task(bind=True, max_retries=3, default_retry_delay=60)
+def notify_admins_contact_message(self, contact_message_id):
+    """
+    Notify all admin staff when a new contact form submission arrives.
+
+    Args:
+        contact_message_id: ID of the ContactMessage record
+
+    Returns:
+        str: Success message
+    """
+    try:
+        from .models import ContactMessage
+        msg = ContactMessage.objects.get(id=contact_message_id)
+
+        admin_emails = list(
+            User.objects.filter(is_staff=True, is_active=True)
+            .values_list('email', flat=True)
+        )
+
+        if not admin_emails:
+            logger.warning("No admin users found — contact notification not sent.")
+            return "No admin recipients"
+
+        subject = f"[SoundWaveAudio] New Contact Message from {msg.name}"
+
+        plain_body = f"""
+You have received a new contact form submission on SoundWaveAudio.
+
+Name:    {msg.name}
+Email:   {msg.email}
+Sent at: {msg.created_at.strftime('%Y-%m-%d %H:%M UTC')}
+
+--- Message ---
+{msg.message}
+---------------
+
+Reply directly to the customer at: {msg.email}
+
+To manage this message, visit the admin panel:
+https://shop.nerdwaretechnologies.com/admin/
+"""
+
+        from django.core.mail import EmailMultiAlternatives
+
+        email = EmailMultiAlternatives(
+            subject=subject,
+            body=plain_body,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            to=admin_emails,
+            reply_to=[msg.email],
+        )
+        email.send(fail_silently=False)
+
+        logger.info(
+            f"Contact notification sent to {len(admin_emails)} admin(s) "
+            f"for message id={contact_message_id}"
+        )
+        return f"Notification sent for contact message {contact_message_id}"
+
+    except Exception as exc:
+        logger.error(f"Failed to send contact notification: {exc}", exc_info=True)
+        raise self.retry(exc=exc, countdown=60 * (2 ** self.request.retries))
+
+
+@shared_task(bind=True, max_retries=3, default_retry_delay=60)
+def send_contact_acknowledgement(self, contact_message_id):
+    """
+    Send an auto-acknowledgement email to the person who submitted the contact form.
+
+    Args:
+        contact_message_id: ID of the ContactMessage record
+
+    Returns:
+        str: Success message
+    """
+    try:
+        from .models import ContactMessage
+        msg = ContactMessage.objects.get(id=contact_message_id)
+
+        subject = "We received your message — SoundWaveAudio"
+
+        plain_body = f"""
+Hi {msg.name},
+
+Thank you for reaching out to SoundWaveAudio! We've received your message
+and will get back to you as soon as possible (usually within 1–2 business days).
+
+--- Your Message ---
+{msg.message}
+--------------------
+
+If your query is urgent, you can also reach us at:
+Phone: +254 (0) 724 013 583
+Email: info@soundwaveaudio.co.ke
+
+Best regards,
+The SoundWaveAudio Team
+"""
+
+        from django.core.mail import EmailMultiAlternatives
+
+        email = EmailMultiAlternatives(
+            subject=subject,
+            body=plain_body,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            to=[msg.email],
+        )
+        email.send(fail_silently=False)
+
+        logger.info(f"Contact acknowledgement sent to {msg.email}")
+        return f"Acknowledgement sent to {msg.email}"
+
+    except Exception as exc:
+        logger.error(f"Failed to send contact acknowledgement: {exc}", exc_info=True)
+        raise self.retry(exc=exc, countdown=60 * (2 ** self.request.retries))
 
 # ============================================================================
 # SCHEDULED TASK CONFIGURATIONS

@@ -37,7 +37,7 @@ class Order(models.Model):
         ('OnDelivery', 'Cash on Delivery'),
     ]
 
-    customer = models.ForeignKey('customers.Customer', on_delete=models.PROTECT, related_name='orders')
+    customer = models.ForeignKey('customers.Customer', on_delete=models.PROTECT, related_name='orders', null=True, blank=True)
     order_number = models.CharField(max_length=50, unique=True, editable=False)
     status = models.CharField(max_length=20, choices=ORDER_STATUS, default='pending')
     payment_status = models.CharField(max_length=20, choices=PAYMENT_STATUS, default='pending')
@@ -95,6 +95,8 @@ class Order(models.Model):
     # Guest order info
     guest_email = models.EmailField(blank=True)
     guest_phone = models.CharField(max_length=20, blank=True)
+    guest_first_name = models.CharField(max_length=100, blank=True)
+    guest_last_name = models.CharField(max_length=100, blank=True)
     
     # Audit
     ip_address = models.GenericIPAddressField(null=True, blank=True)
@@ -137,7 +139,9 @@ class Order(models.Model):
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"Order {self.order_number} - {self.customer.user.email}"
+        if self.customer:
+            return f"Order {self.order_number} - {self.customer.user.email}"
+        return f"Order {self.order_number} - Guest ({self.guest_email})"
 
     @property
     def is_paid(self):

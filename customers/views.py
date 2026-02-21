@@ -10,7 +10,7 @@ from django.utils import timezone
 from django.conf import settings
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from .utils import generate_reset_code, send_password_reset_email, account_activation_token
-from .models import Customer, Address, PasswordResetCode
+from .models import Customer, Address, PasswordResetCode, ContactMessage
 from .serializers import (
     CustomerSerializer, 
     UserRegistrationSerializer, 
@@ -19,10 +19,13 @@ from .serializers import (
     AddressSerializer,
     PasswordResetRequestSerializer,
     PasswordResetCodeVerifySerializer,
-    PasswordResetConfirmSerializer
+    PasswordResetConfirmSerializer,
+    ContactMessageSerializer, 
+    ContactMessageAdminSerializer
 )
 from backend.pagination import StandardResultsSetPagination, LargeResultsSetPagination
-from .tasks import send_welcome_email, send_password_reset_email_async, send_loyalty_points_notification
+from .tasks import send_welcome_email, send_password_reset_email_async, send_loyalty_points_notification, notify_admins_contact_message, send_contact_acknowledgement
+
 
 class RegisterView(generics.CreateAPIView):
     """API endpoint for user registration"""
@@ -377,3 +380,105 @@ class PasswordResetConfirmView(generics.GenericAPIView):
         return Response({
             "message": "Password has been reset successfully. You can now log in with your new password."
         }, status=status.HTTP_200_OK)
+
+class ContactMessageView(generics.CreateAPIView):
+    """
+    POST /api/contact/
+    Public endpoint — anyone can submit a contact message.
+    Triggers async emails to admins and sends an acknowledgement to the sender.
+    """
+    permission_classes = [AllowAny]
+    serializer_class = ContactMessageSerializer
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        # Capture IP for basic spam tracking
+        ip = self._get_client_ip(request)
+        contact_msg = serializer.save(ip_address=ip)
+
+        # Fire async tasks — no waiting on email sending
+        notify_admins_contact_message.delay(contact_msg.id)
+        send_contact_acknowledgement.delay(contact_msg.id)
+
+        return Response(
+            {"message": "Your message has been received. We'll get back to you shortly!"},
+            status=status.HTTP_201_CREATED,
+        )
+
+    def _get_client_ip(self, request):
+        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+        if x_forwarded_for:
+            return x_forwarded_for.split(',')[0].strip()
+        return request.META.get('REMOTE_ADDR')
+
+
+class ContactMessageAdminViewSet(viewsets.ModelViewSet):
+    """
+    Admin-only viewset for managing contact messages.
+
+    GET    /api/contact/admin/          — list all messages (paginated)
+    GET    /api/contact/admin/{id}/     — retrieve a single message
+    PATCH  /api/contact/admin/{id}/     — update status / admin_notes
+    DELETE /api/contact/admin/{id}/     — delete a message
+
+    Supports filtering via query params:
+        ?status=new|read|replied|archived
+        ?search=<name or email>
+    """
+    serializer_class = ContactMessageAdminSerializer
+    permission_classes = [permissions.IsAdminUser]
+    pagination_class = StandardResultsSetPagination
+
+    def get_queryset(self):
+        qs = ContactMessage.objects.all()
+
+        # Filter by status
+        status_filter = self.request.query_params.get('status')
+        if status_filter in dict(ContactMessage.STATUS_CHOICES):
+            qs = qs.filter(status=status_filter)
+
+        # Simple search by name or email
+        search = self.request.query_params.get('search')
+        if search:
+            from django.db.models import Q
+            qs = qs.filter(Q(name__icontains=search) | Q(email__icontains=search))
+
+        return qs
+
+    def retrieve(self, request, *args, **kwargs):
+        """Auto-mark as 'read' when an admin first opens a message."""
+        instance = self.get_object()
+        if instance.status == 'new':
+            instance.status = 'read'
+            instance.save(update_fields=['status', 'updated_at'])
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
+
+    @action(detail=True, methods=['post'])
+    def mark_replied(self, request, pk=None):
+        """Convenience action: POST /api/contact/admin/{id}/mark_replied/"""
+        msg = self.get_object()
+        msg.status = 'replied'
+        msg.save(update_fields=['status', 'updated_at'])
+        return Response({"message": "Marked as replied."})
+
+    @action(detail=True, methods=['post'])
+    def archive(self, request, pk=None):
+        """Convenience action: POST /api/contact/admin/{id}/archive/"""
+        msg = self.get_object()
+        msg.status = 'archived'
+        msg.save(update_fields=['status', 'updated_at'])
+        return Response({"message": "Message archived."})
+
+    @action(detail=False, methods=['get'])
+    def summary(self, request):
+        """GET /api/contact/admin/summary/ — count per status for dashboard badges."""
+        from django.db.models import Count
+        counts = (
+            ContactMessage.objects
+            .values('status')
+            .annotate(count=Count('id'))
+        )
+        return Response({item['status']: item['count'] for item in counts})
