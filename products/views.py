@@ -168,7 +168,7 @@ class ProductViewSet(viewsets.ModelViewSet):
 
         # 3. Fallback: recursive slug truncation
         parts = slug.split('-')
-        while len(parts) > 1:
+        while len(parts) > 0:
             parts = parts[:-1]
             truncated = '-'.join(parts)
             
