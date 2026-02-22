@@ -168,13 +168,14 @@ class ProductViewSet(viewsets.ModelViewSet):
 
         # 3. Fallback: recursive slug truncation
         parts = slug.split('-')
-        while len(parts) > 0:
+        print(parts)
+        while len(parts) > 1:
             parts = parts[:-1]
             truncated = '-'.join(parts)
             
             # startswith truncated slug
             matches = queryset.filter(slug__startswith=truncated)
-            if matches.count() == 1:
+            if matches.count() >= 1:
                 obj = matches.first()
                 self.check_object_permissions(self.request, obj)
                 return obj
