@@ -89,7 +89,7 @@ class OrderNotifications:
         email_context = {
             'order': order,
             'site_name': getattr(settings, 'SITE_NAME', 'SoundWaveAudio'),
-            'site_url': getattr(settings, 'SITE_URL', 'http://localhost:8000'),
+            'site_url': getattr(settings, 'SITE_URL', 'https://soundwaveaudio.co.ke'),
             'support_email': getattr(settings, 'SUPPORT_EMAIL', 'support@soundwave.com'),
             'current_year': timezone.now().year,
         }

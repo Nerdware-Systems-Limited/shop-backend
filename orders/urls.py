@@ -3,7 +3,7 @@ from rest_framework.routers import DefaultRouter
 from .views import (
     OrderViewSet, OrderItemViewSet, ShippingMethodViewSet,
     OrderReturnViewSet, OrderNoteViewSet, OrderAnalyticsView,
-    PublicOrderStatusView, shipping_webhook
+    PublicOrderStatusView, shipping_webhook, OrderTrackingView
 )
 
 router = DefaultRouter()
@@ -22,4 +22,5 @@ urlpatterns = [
     path('analytics/', OrderAnalyticsView.as_view(), name='order-analytics'),
     path('public/status/', PublicOrderStatusView.as_view(), name='public-order-status'),
     path('webhook/shipping/<str:carrier>/', shipping_webhook, name='shipping-webhook'),
+    path('track/', OrderTrackingView.as_view(), name='order-track')
 ]

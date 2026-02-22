@@ -17,6 +17,8 @@ from .models import (
     Order, OrderItem, OrderStatusHistory, ShippingMethod, 
     OrderReturn, ReturnItem, OrderNote
 )
+from customers.serializers import AddressSerializer
+from customers.models import Address
 from .serializers import (
     OrderListSerializer, OrderDetailSerializer, OrderCreateSerializer,
     OrderUpdateSerializer, OrderCancelSerializer, OrderItemSerializer,
@@ -38,7 +40,74 @@ from .tasks import (
 )
 from .notifications import send_order_confirmation
 from payments.services import MpesaPaymentService
+from .tokens import validate_order_tracking_token
 
+
+class OrderTrackingView(APIView):
+    """
+    Public endpoint: validate a 14-day tracking token and return order progress.
+    No authentication required — the signed token IS the credential.
+
+    GET /api/orders/track/?token=<tracking_token>
+    """
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        token = request.GET.get('token', '').strip()
+
+        if not token:
+            return Response(
+                {'error': 'Tracking token is required.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Validate token (checks signature + 14-day expiry)
+        order_number = validate_order_tracking_token(token)
+
+        if order_number is None:
+            return Response(
+                {'error': 'This tracking link has expired or is invalid. '
+                          'Please log in to view your order, or contact support.'},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+
+        try:
+            order = Order.objects.select_related(
+                'customer__user', 'shipping_address'
+            ).prefetch_related(
+                'items__product', 'status_history'
+            ).get(order_number=order_number)
+
+        except Order.DoesNotExist:
+            print(order_number)
+            return Response(
+                {'error': 'Order not found.'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        # Return the subset of data needed for the public tracking page
+        status_history = [
+            {
+                'status': h.new_status,
+                'timestamp': h.created_at,
+                'notes': h.notes,
+            }
+            for h in order.status_history.order_by('created_at')
+        ]
+
+        serializer = OrderDetailSerializer(order)
+        data = serializer.data
+
+        address_id = order.shipping_address.id
+        address = Address.objects.get(id=address_id)
+        print(AddressSerializer(address).data)
+
+        data["shipping_address"] = AddressSerializer(address).data
+
+        return Response({
+            **data,
+            "token_valid": True,
+        })
 
 class OrderViewSet(viewsets.ModelViewSet):
     """

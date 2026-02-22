@@ -166,7 +166,27 @@ class ProductViewSet(viewsets.ModelViewSet):
             self.check_object_permissions(self.request, obj)
             return obj
 
-        # 3. Nothing found
+        # 3. Fallback: recursive slug truncation
+        parts = slug.split('-')
+        while len(parts) > 1:
+            parts = parts[:-1]
+            truncated = '-'.join(parts)
+            
+            # startswith truncated slug
+            matches = queryset.filter(slug__startswith=truncated)
+            if matches.count() == 1:
+                obj = matches.first()
+                self.check_object_permissions(self.request, obj)
+                return obj
+
+        # 4. Last resort: slug contains any part of the original slug
+        matches = queryset.filter(slug__icontains=slug)
+        if matches.exists():
+            obj = matches.first()
+            self.check_object_permissions(self.request, obj)
+            return obj
+
+        # 5. Nothing found
         raise NotFound(detail="PRODUCT NOT FOUND")
 
     def get_queryset(self):

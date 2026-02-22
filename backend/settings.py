@@ -208,6 +208,7 @@ SIMPLE_JWT = {
 CORS_ALLOW_ALL_ORIGINS = DEBUG
 CORS_ALLOWED_ORIGINS = config('CORS_ALLOWED_ORIGINS', default='http://localhost:5173, https://shop-backend-9dtg.onrender.com').split(',')
 
+SITE_URL = CORS_ALLOWED_ORIGINS[0]
 # Cache Configuration
 CACHES = {
     'default': {

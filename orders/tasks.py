@@ -15,9 +15,11 @@ import logging
 from .models import Order, OrderItem, OrderStatusHistory, OrderReturn
 from .notifications import OrderNotifications
 from customers.models import Customer
+from .tokens import generate_order_tracking_token
 
 logger = logging.getLogger(__name__)
 
+FRONTEND_URL = getattr(settings, 'SITE_URL', 'http://localhost:5173')
 
 # ============================================================================
 # EMAIL NOTIFICATION TASKS
@@ -27,11 +29,12 @@ logger = logging.getLogger(__name__)
 def send_order_confirmation_email(self, order_id):
     """
     Send order confirmation email asynchronously.
-    Includes order details, items, and next steps.
-    
+    Includes a 14-day expiring tracking token so users can view order
+    progress without logging in.
+
     Args:
         order_id: ID of the order
-    
+
     Returns:
         str: Success message
     """
@@ -39,26 +42,44 @@ def send_order_confirmation_email(self, order_id):
         order = Order.objects.select_related(
             'customer__user', 'billing_address', 'shipping_address'
         ).prefetch_related('items__product').get(id=order_id)
-        
-        # Send email using notifications system
-        success = OrderNotifications.send_email_notification(
-            order, 
-            'order_confirmation'
+
+        # --- Generate 14-day tracking token ---
+        tracking_token = generate_order_tracking_token(order.order_number)
+
+        # Build the full tracking URL
+        # e.g. http://localhost:5173/orders/ORD-9F4E5CAC6F?tracking_token=<token>
+        tracking_url = (
+            f"{FRONTEND_URL}/order/{order.order_number}"
+            f"?tracking_token={tracking_token}"
         )
-        
+
+        # Pass token context to the email template
+        context = {
+            'tracking_token': tracking_token,
+            'tracking_url': tracking_url,
+            'token_expiry_days': 14,
+        }
+
+        success = OrderNotifications.send_email_notification(
+            order,
+            'order_confirmation',
+            context=context,       # <-- your notifications system merges this
+        )
+
         if success:
             logger.info(f"✅ Order confirmation sent for {order.order_number}")
             return f"Confirmation email sent for order {order.order_number}"
         else:
             raise Exception("Failed to send email")
-        
+
     except Order.DoesNotExist:
         logger.error(f"Order with id {order_id} not found")
         raise
-        
+
     except Exception as exc:
         logger.error(f"Failed to send order confirmation: {exc}", exc_info=True)
         raise self.retry(exc=exc, countdown=60 * (2 ** self.request.retries))
+
 
 
 @shared_task(bind=True, max_retries=3, default_retry_delay=60)

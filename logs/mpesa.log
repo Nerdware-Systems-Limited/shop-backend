@@ -5870,3 +5870,100 @@ Querying M-Pesa API for transaction status: ws_CO_21022026093933677720624242
 M-Pesa status response: {'ResponseCode': '0', 'ResponseDescription': 'The service request has been accepted successfully', 'MerchantRequestID': '0b15-485a-956f-021c3a15512f7504', 'CheckoutRequestID': 'ws_CO_21022026093933677720624242', 'ResultCode': '1032', 'ResultDesc': 'Request Cancelled by user.'}
 Transaction ws_CO_21022026093933677720624242 marked as cancelled
 Checked 1 pending transactions, updated 1
+Token refreshed for Sandbox Config
+Refreshed 1 M-Pesa access tokens
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+New M-Pesa access token fetched for Sandbox Config
+Token refreshed for Sandbox Config
+Refreshed 1 M-Pesa access tokens
+Timed out 0 stuck transactions
+Daily reconciliation completed for 2026-02-22
+Cleaned up 0 old callbacks
+Checked 0 pending transactions, updated 0
+Token refreshed for Sandbox Config
+Refreshed 1 M-Pesa access tokens
+Timed out 0 stuck transactions
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+New M-Pesa access token fetched for Sandbox Config
+Token refreshed for Sandbox Config
+Refreshed 1 M-Pesa access tokens
+Timed out 0 stuck transactions
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Token refreshed for Sandbox Config
+Refreshed 1 M-Pesa access tokens
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Timed out 0 stuck transactions
+Checked 0 pending transactions, updated 0
+Token refreshed for Sandbox Config
+Refreshed 1 M-Pesa access tokens
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+New M-Pesa access token fetched for Sandbox Config
+Token refreshed for Sandbox Config
+Refreshed 1 M-Pesa access tokens
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Timed out 0 stuck transactions
+Token refreshed for Sandbox Config
+Refreshed 1 M-Pesa access tokens
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Token refreshed for Sandbox Config
+Refreshed 1 M-Pesa access tokens
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Timed out 0 stuck transactions
+Checked 0 pending transactions, updated 0
+New M-Pesa access token fetched for Sandbox Config
+Token refreshed for Sandbox Config
+Refreshed 1 M-Pesa access tokens
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Token refreshed for Sandbox Config
+Refreshed 1 M-Pesa access tokens
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Timed out 0 stuck transactions
+Token refreshed for Sandbox Config
+Refreshed 1 M-Pesa access tokens
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0
+Checked 0 pending transactions, updated 0

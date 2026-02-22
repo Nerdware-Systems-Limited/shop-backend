@@ -317,11 +317,33 @@
             {% endif %}
 
             <!-- CTA Button -->
-            <center>
-                <a href="{{ site_url }}/orders/{{ order.order_number }}" class="cta-button">
-                    View Order Details
+            <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin: 32px 0;">
+            <tr>
+                <td align="center">
+                <a href="{{ tracking_url }}"
+                    style="
+                    display: inline-block;
+                    background-color: #000000;
+                    color: #ffffff;
+                    text-decoration: none;
+                    font-size: 14px;
+                    font-weight: 400;
+                    letter-spacing: 0.05em;
+                    padding: 14px 32px;
+                    border-radius: 2px;
+                    ">
+                    View Order Details →
                 </a>
-            </center>
+                </td>
+            </tr>
+            <tr>
+                <td align="center" style="padding-top: 12px;">
+                <p style="font-size: 12px; color: #9ca3af; margin: 0;">
+                    This link is valid for {{ token_expiry_days }} days and does not require login.
+                </p>
+                </td>
+            </tr>
+            </table>
 
             <!-- Customer Notes -->
             {% if order.customer_notes %}
