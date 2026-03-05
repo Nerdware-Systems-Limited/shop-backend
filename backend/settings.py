@@ -65,6 +65,7 @@ INSTALLED_APPS = [
     'customers',
     'inventory',
     'payments',
+    'installations',
 ]
 
 MIDDLEWARE = [
@@ -135,6 +136,16 @@ STATICFILES_STORAGE = 'storages.backends.s3boto3.S3StaticStorage'
 MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/media/'
 STATIC_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/static/'
 
+# Additional static files directories (for development)
+STATICFILES_DIRS = [
+    BASE_DIR / 'installations' / 'static',
+]
+
+# Template directories
+TEMPLATES[0]['DIRS'] = [
+    BASE_DIR / 'templates',
+    BASE_DIR / 'installations' / 'templates',
+]
 
 # REST Framework Configuration
 REST_FRAMEWORK = {

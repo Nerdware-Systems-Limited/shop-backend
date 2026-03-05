@@ -1,0 +1,298 @@
+{% load i18n admin_urls %}
+<div class="inline-group job-inline-group" id="{{ inline_admin_formset.formset.prefix }}-group">
+
+    <div class="inline-related{% if forloop.last %} empty-form last-related{% endif %}" id="{{ inline_admin_formset.formset.prefix }}-{% if forloop.last %}empty{% else %}{{ forloop.counter }}{% endif %}">
+        <h3>
+            <span class="inline_label">{% if inline_admin_formset.original %}{{ inline_admin_formset.original }}{% else %}#{{ forloop.counter }}{% endif %}</span>
+            <span class="delete-label">{% if inline_admin_formset.original %}{% trans "Delete" %}{% else %}{% trans "Remove" %}{% endif %}</span>
+        </h3>
+
+        {% if inline_admin_formset.show %}
+        <fieldset class="module job-inline-fieldset">
+            {{ inline_admin_formset.formset.management_form }}
+            {{ inline_admin_formset.non_form_errors }}
+
+            <table class="job-inline-table">
+                <thead>
+                    <tr>
+                        {% for field in inline_admin_formset.fields %}
+                            {% if not field.widget.is_hidden %}
+                                <th class="field-{{ field.name }}{% if field.required %} required{% endif %}">
+                                    {{ field.label|capfirst }}
+                                    {% if field.help_text %}
+                                        <img src="{% static "admin/img/icon-unknown.svg" %}" class="help help-tooltip" title="{{ field.help_text|safe }}" alt="">
+                                    {% endif %}
+                                </th>
+                            {% endif %}
+                        {% endfor %}
+                        {% if inline_admin_formset.has_add_permission %}
+                            <th class="original-{{ inline_admin_formset.opts.verbose_name }}"></th>
+                        {% endif %}
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for nested_form in inline_admin_formset %}
+                        {% if nested_form.non_field_errors %}
+                            <tr><td colspan="{{ inline_admin_formset.fields|length|add:1 }}" class="error">{{ nested_form.non_field_errors }}</td></tr>
+                        {% endif %}
+                        <tr class="form-row{% if forloop.last and not nested_form.original %} empty-form{% endif %}{% if nested_form.errors %} errors{% endif %}"
+                            id="{{ nested_form.formset.prefix }}-{% if forloop.last %}empty{% else %}{{ forloop.counter }}{% endif %}">
+                            {% for field in nested_form %}
+                                {% if field.widget.is_hidden %}
+                                    {{ field }}
+                                {% else %}
+                                    <td class="{% if field.field.name %}field-{{ field.field.name }}{% endif %}{% if field.errors %} errors{% endif %}">
+                                        {% if field.errors %}
+                                            {{ field.errors }}
+                                        {% endif %}
+                                        {{ field }}
+                                    </td>
+                                {% endif %}
+                            {% endfor %}
+                            {% if inline_admin_formset.has_add_permission %}
+                                <td class="delete">
+                                    {% if nested_form.original %}
+                                        {{ nested_form.DELETE }}
+                                        {% if nested_form.formset.can_delete %}
+                                            <label class="delete-label" for="{{ nested_form.DELETE.id_for_label }}">
+                                                <span class="delete-icon">×</span>
+                                            </label>
+                                        {% endif %}
+                                    {% endif %}
+                                </td>
+                            {% endif %}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+        </fieldset>
+        {% endif %}
+    </div>
+
+    {% if inline_admin_formset.has_add_permission %}
+    <div class="add-row">
+        <a href="#" class="add-item-button">
+            <span class="icon">+</span>
+            {% blocktrans with inline_admin_formset.opts.verbose_name|capfirst as verbose_name %}Add another {{ verbose_name }}{% endblocktrans %}
+        </a>
+    </div>
+    {% endif %}
+
+</div>
+
+<script>
+(function() {
+    'use strict';
+    var prefix = '{{ inline_admin_formset.formset.prefix }}';
+    var relatedName = '{{ inline_admin_formset.formset.related_name|default:inline_admin_formset.opts.verbose_name_plural }}';
+
+    $(document).ready(function() {
+        var $group = $('#' + prefix + '-group');
+
+        // Add responsive class to the table
+        $group.find('table').addClass('responsive-table');
+
+        // Add count indicator
+        var $rows = $group.find('tbody tr').not('.empty-form');
+        if ($rows.length > 0) {
+            $group.find('h3').append(' <span class="item-count">(' + $rows.length + ' items)</span>');
+        }
+
+        // Style the delete buttons
+        $group.find('.delete input[type="checkbox"]').each(function() {
+            var $checkbox = $(this);
+            var $label = $checkbox.next('label.delete-label');
+
+            if (!$label.length) {
+                $label = $('<label class="delete-label"><span class="delete-icon">×</span></label>');
+                $checkbox.after($label);
+            }
+
+            $checkbox.hide();
+            $label.css({
+                'cursor': 'pointer',
+                'color': '#d32f2f',
+                'font-size': '18px',
+                'font-weight': 'bold',
+                'display': 'inline-block',
+                'width': '20px',
+                'height': '20px',
+                'line-height': '20px',
+                'text-align': 'center',
+                'border': '1px solid #d32f2f',
+                'border-radius': '3px',
+                'background': '#fff'
+            });
+
+            if ($checkbox.is(':checked')) {
+                $label.css({
+                    'background': '#d32f2f',
+                    'color': '#fff'
+                });
+            }
+
+            $label.on('click', function() {
+                if ($checkbox.is(':checked')) {
+                    $checkbox.prop('checked', false);
+                    $(this).css({
+                        'background': '#fff',
+                        'color': '#d32f2f'
+                    });
+                    $checkbox.closest('tr').css('opacity', '1');
+                } else {
+                    $checkbox.prop('checked', true);
+                    $(this).css({
+                        'background': '#d32f2f',
+                        'color': '#fff'
+                    });
+                    $checkbox.closest('tr').css('opacity', '0.5');
+                }
+            });
+        });
+    });
+})();
+</script>
+
+<style>
+    /* Inline form responsive styles */
+    .job-inline-group {
+        margin: 15px 0;
+        border: 1px solid #e0e0e0;
+        border-radius: 4px;
+        background: #fff;
+    }
+
+    .job-inline-group h3 {
+        margin: 0;
+        padding: 12px 15px;
+        background: linear-gradient(to bottom, #f8f9fa, #e9ecef);
+        border-bottom: 1px solid #ddd;
+        font-size: 13px;
+        font-weight: 600;
+        color: #333;
+    }
+
+    .job-inline-group h3 .item-count {
+        font-weight: normal;
+        color: #666;
+        margin-left: 8px;
+    }
+
+    .job-inline-fieldset {
+        margin: 0;
+        padding: 0;
+        border: none;
+    }
+
+    .job-inline-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .job-inline-table th {
+        background: #f8f9fa;
+        padding: 10px 12px;
+        text-align: left;
+        font-size: 12px;
+        font-weight: 600;
+        color: #555;
+        border-bottom: 2px solid #dee2e6;
+    }
+
+    .job-inline-table td {
+        padding: 8px 12px;
+        border-bottom: 1px solid #f0f0f0;
+        vertical-align: middle;
+    }
+
+    .job-inline-table td.field-image {
+        min-width: 100px;
+    }
+
+    .job-inline-table td.field-image_preview img,
+    .job-inline-table td.field-video_preview img {
+        max-width: 80px;
+        max-height: 60px;
+        border-radius: 4px;
+        object-fit: cover;
+    }
+
+    .job-inline-table tr:hover {
+        background: #f8f9fa;
+    }
+
+    .job-inline-table input[type="text"],
+    .job-inline-table input[type="number"],
+    .job-inline-table input[type="url"],
+    .job-inline-table select,
+    .job-inline-table textarea {
+        width: 100%;
+        max-width: 200px;
+    }
+
+    .job-inline-table textarea {
+        min-height: 40px;
+    }
+
+    .job-inline-table .delete {
+        width: 40px;
+        text-align: center;
+    }
+
+    /* Add row button */
+    .job-inline-group .add-row {
+        padding: 12px 15px;
+        background: #f8f9fa;
+        border-top: 1px solid #e0e0e0;
+    }
+
+    .job-inline-group .add-row a {
+        display: inline-flex;
+        align-items: center;
+        padding: 8px 16px;
+        background: #4caf50;
+        color: white;
+        text-decoration: none;
+        border-radius: 4px;
+        font-size: 13px;
+        font-weight: 500;
+        transition: background 0.2s;
+    }
+
+    .job-inline-group .add-row a:hover {
+        background: #43a047;
+    }
+
+    .job-inline-group .add-row .icon {
+        margin-right: 6px;
+        font-size: 16px;
+        font-weight: bold;
+    }
+
+    /* Responsive adjustments */
+    @media screen and (max-width: 1024px) {
+        .job-inline-table {
+            display: block;
+            overflow-x: auto;
+        }
+    }
+
+    @media screen and (max-width: 768px) {
+        .job-inline-group {
+            margin: 10px 0;
+        }
+
+        .job-inline-table th,
+        .job-inline-table td {
+            padding: 6px 8px;
+            font-size: 12px;
+        }
+
+        .job-inline-table input,
+        .job-inline-table select {
+            max-width: 150px;
+        }
+    }
+</style>

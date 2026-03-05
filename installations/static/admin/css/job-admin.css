@@ -1,0 +1,404 @@
+/**
+ * Installation Job Admin - Responsive Styles
+ * Fixes width overflow issues and improves overall design
+ */
+
+/* ============================================
+   BASE RESPONSIVE FIXES
+   ============================================ */
+
+@media screen and (max-width: 1280px) {
+    /* Reduce padding on smaller screens */
+    #content-main {
+        padding: 15px;
+    }
+
+    .form-row {
+        padding: 10px 15px;
+    }
+}
+
+@media screen and (max-width: 1024px) {
+    /* Tablet adjustments */
+    #content-main {
+        padding: 10px;
+    }
+
+    .form-row > .field-box {
+        width: 100% !important;
+        margin-right: 0 !important;
+        margin-bottom: 10px;
+    }
+
+    /* Make fieldsets full width */
+    fieldset.job-fieldset {
+        width: 100% !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        max-width: 100% !important;
+    }
+}
+
+@media screen and (max-width: 768px) {
+    /* Mobile adjustments */
+    #content-main {
+        padding: 8px;
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+
+    /* Make form elements full width */
+    .form-row,
+    .field-box,
+    fieldset.job-fieldset {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        float: none !important;
+    }
+
+    /* Stack all form fields vertically */
+    .form-row > div,
+    .form-row > .field-box > * {
+        width: 100% !important;
+        display: block !important;
+        margin-right: 0 !important;
+    }
+
+    /* Responsive inputs */
+    input[type="text"],
+    input[type="email"],
+    input[type="number"],
+    input[type="url"],
+    select,
+    textarea {
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box;
+    }
+
+    /* Responsive fieldsets */
+    fieldset {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 10px 0 !important;
+        padding: 10px !important;
+        box-sizing: border-box;
+    }
+
+    /* Fix the main content wrapper */
+    #content {
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
+    /* Fix the change form container */
+    .change-form #content-main {
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+
+    /* Inline forms responsiveness */
+    .inline-group {
+        width: 100% !important;
+        max-width: 100% !important;
+        overflow-x: auto;
+    }
+
+    .inline-group table {
+        width: 100% !important;
+        min-width: 600px; /* Allow horizontal scroll on small screens */
+    }
+
+    /* SEO fieldset improvements */
+    fieldset.seo-fieldset {
+        break-inside: avoid;
+    }
+}
+
+/* ============================================
+   FIELDSET IMPROVEMENTS
+   ============================================ */
+
+fieldset.job-fieldset {
+    background: #fff;
+    border: 1px solid #e8e8e8;
+    border-radius: 4px;
+    margin: 15px 0;
+    padding: 15px 20px;
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 100%;
+}
+
+fieldset.job-fieldset.collapsed {
+    margin-bottom: 10px;
+}
+
+fieldset.job-fieldset legend {
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+    padding: 5px 10px;
+    background: #f8f9fa;
+    border-radius: 3px;
+    border: 1px solid #ddd;
+}
+
+fieldset.job-fieldset .description {
+    font-size: 12px;
+    color: #666;
+    font-style: italic;
+    margin-bottom: 15px;
+    padding: 8px 12px;
+    background: #f9f9f9;
+    border-left: 3px solid #79aec8;
+    border-radius: 0 3px 3px 0;
+}
+
+/* Full width fieldset styling */
+fieldset.full-width {
+    width: 100%;
+    max-width: 100%;
+    float: none;
+    clear: both;
+}
+
+/* ============================================
+   FORM ROW IMPROVEMENTS
+   ============================================ */
+
+.form-row {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
+    padding: 12px 20px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.form-row:last-child {
+    border-bottom: none;
+}
+
+.form-row::after {
+    content: "";
+    display: table;
+    clear: both;
+}
+
+/* Make field groups stack properly */
+.form-row > .field-box {
+    float: none;
+    width: auto;
+    margin-right: 0;
+    margin-bottom: 8px;
+    display: block;
+}
+
+.form-row > div {
+    float: none;
+    width: auto;
+    margin-right: 0;
+    margin-bottom: 8px;
+}
+
+/* ============================================
+   INLINE FORMS IMPROVEMENTS
+   ============================================ */
+
+.inline-group {
+    margin: 15px 0;
+    padding: 0;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background: #fff;
+    overflow-x: auto;
+}
+
+.inline-group h3 {
+    margin: 0;
+    padding: 10px 15px;
+    background: #f8f9fa;
+    border-bottom: 1px solid #ddd;
+    font-size: 14px;
+}
+
+.inline-group table {
+    width: 100%;
+    min-width: 800px; /* Ensure table doesn't squash */
+}
+
+.inline-group .form-row {
+    padding: 8px 15px;
+}
+
+/* ============================================
+   SEO SECTION IMPROVEMENTS
+   ============================================ */
+
+.seo-fieldset {
+    background: #fafdff;
+    border-color: #b8d4e8;
+}
+
+.seo-fieldset .readonly {
+    background: #fff;
+    padding: 10px;
+    border-radius: 4px;
+    border: 1px solid #e0e0e0;
+    margin-bottom: 10px;
+}
+
+/* SEO preview boxes */
+.seo-fieldset .meta-preview {
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 12px;
+    margin: 10px 0;
+}
+
+/* ============================================
+   HELPER CLASSES
+   ============================================ */
+
+/* Two column layout for wider screens */
+@media screen and (min-width: 1200px) {
+    .form-row.two-columns > div,
+    .form-row.two-columns > .field-box {
+        width: 48%;
+        float: left;
+        margin-right: 2%;
+    }
+
+    .form-row.two-columns > div:nth-child(2n),
+    .form-row.two-columns > .field-box:nth-child(2n) {
+        margin-right: 0;
+    }
+}
+
+/* Three column layout */
+@media screen and (min-width: 1400px) {
+    .form-row.three-columns > div,
+    .form-row.three-columns > .field-box {
+        width: 32%;
+        float: left;
+        margin-right: 2%;
+    }
+
+    .form-row.three-columns > div:nth-child(3n),
+    .form-row.three-columns > .field-box:nth-child(3n) {
+        margin-right: 0;
+    }
+}
+
+/* ============================================
+   PREVIEW IMAGES IMPROVEMENTS
+   ============================================ */
+
+.image-preview-box {
+    background: #f8f9fa;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 10px;
+    margin: 10px 0;
+    text-align: center;
+}
+
+.image-preview-box img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 4px;
+}
+
+/* ============================================
+   OVERFLOW FIXES
+   ============================================ */
+
+/* Prevent horizontal scroll on main container */
+body {
+    overflow-x: hidden;
+}
+
+/* Fix overflow in content area */
+#content {
+    overflow-x: hidden;
+}
+
+#content-main {
+    overflow-x: hidden;
+    width: auto;
+    max-width: 100%;
+}
+
+/* Fix overflow in form rows */
+.form-row {
+    overflow-x: hidden;
+}
+
+/* Ensure fieldsets don't overflow */
+fieldset {
+    min-width: 0;
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+/* ============================================
+   ACCESSIBILITY IMPROVEMENTS
+   ============================================ */
+
+.form-row label {
+    display: block;
+    margin-bottom: 4px;
+    font-weight: 500;
+    color: #333;
+}
+
+.form-row label.required {
+    font-weight: 600;
+}
+
+.form-row label.required::after {
+    content: " *";
+    color: #d32f2f;
+}
+
+/* Help text improvements */
+.form-row .help {
+    font-size: 11px;
+    color: #666;
+    margin-top: 4px;
+    padding: 4px 8px;
+    background: #f5f5f5;
+    border-radius: 3px;
+}
+
+/* Error states */
+.form-row.errors {
+    background: #ffebee;
+    border-left: 3px solid #d32f2f;
+}
+
+/* ============================================
+   PRINT STYLES
+   ============================================ */
+
+@media print {
+    fieldset.job-fieldset {
+        page-break-inside: avoid;
+        border: 1px solid #ccc;
+    }
+
+    .inline-group {
+        page-break-inside: avoid;
+    }
+
+    .form-row {
+        page-break-inside: avoid;
+    }
+}
